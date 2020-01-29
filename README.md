@@ -36,6 +36,18 @@ A dynamic model of each target follows the SE2 dynamics with a certain control p
 * TargetTracking-v4 : SE2 Target model with UKF belief tracker (including velocity estimates).
 Similar to the v3 environment but the UKF estimates not only x, y, and yaw but also the control policy (linear and angular velocities) of each target.
 
+### Initialization
+Initial positions of targets and the agent significantly influence the reward.  
+Currently, you can randomly initialize them within a certain conditions or provide a set of initial position as a pickle file.
+* Random initialization  
+  The agent's xy position and yaw are always randomly generalized in a given map. If the map is empty, the agent's initial position is the center of the map and only its yaw is randomly initialized. Values for the following variables can be provided (or use the default values) for the initialization of targets and target beliefs.
+  * A range for the linear distance from the agent to a target or a belief target.
+  * A range for the angular distance from the agent to a target.
+  * A range for the angular distance from the agent to a belief target.
+  * A boolean variable whether there is an obstacle between the agent and a target.
+* Initialization with a given a list of poses
+  You can generate a list of initial positions for the agent, targets, and belief targets using ttenv/gen_init_pose.py.
+
 ## Running with RL
 Examples of learning a deep reinforcement learning policy can be found in the ADFQ repository (https://github.com/coco66/ADFQ).
 * DQN : ADFQ/deep_adfq/baselines0/deepq/run_tracking.py
@@ -48,3 +60,15 @@ A search-based planning method used as a baseline in the above paper, Learning Q
 export PYTHONPATH="${PYTHONPATH}:YOUR-PATH-TO-INFOPLANNER/lib"
 python ttenv/infoplanner_python/run_anytime_planner.py --render 1
 ```
+
+## Citing
+If you use this repo in your research, you can cite it as follows:
+```bibtex
+@misc{ttenv,
+    author = {Heejin Jeong, Brent Schlotfeldt, Hamed Hassani, Manfred Morari, Daniel D. Lee, and George J. Pappas},
+    title = {Target tracking environments for Reinforcement Learning},
+    year = {2019},
+    publisher = {GitHub},
+    journal = {GitHub repository},
+    howpublished = {\url{https://github.com/coco66/ttenv.git}},
+}
