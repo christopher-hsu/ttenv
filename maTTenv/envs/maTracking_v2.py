@@ -1,15 +1,13 @@
 import os, copy, pdb
 import numpy as np
 from numpy import linalg as LA
-
 from gym import spaces, logger
-
-from envs.maps import map_utils
-import envs.env_utils as util 
-from envs.maTracking.agent_models import *
-from envs.maTracking.belief_tracker import KFbelief
-from envs.maTracking.metadata import *
-from envs.maTracking.maTracking_Base import maTrackingBase
+from maTTenv.maps import map_utils
+import maTTenv.env_utils as util 
+from maTTenv.agent_models import *
+from maTTenv.belief_tracker import KFbelief
+from maTTenv.metadata import *
+from maTTenv.envs.maTracking_Base import maTrackingBase
 
 """
 Target Tracking Environments for Reinforcement Learning.

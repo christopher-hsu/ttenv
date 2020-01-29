@@ -15,8 +15,8 @@ edited by christopher-hsu from coco66 for multi_agent
 """
 
 import numpy as np
-from envs.maTracking.metadata import *
-import envs.env_utils as util
+from maTTenv.metadata import *
+import maTTenv.env_utils as util
 # import pyInfoGathering as IGL
 
 class Agent(object):

@@ -1,18 +1,15 @@
 import os, copy, pdb
-
 import numpy as np
 from numpy import linalg as LA
-
+import gym
 from gym import spaces, logger
 
-from envs.maps import map_utils
-import envs.env_utils as util 
-from envs.maTracking.metadata import *
-
-from ray.rllib.env import MultiAgentEnv
+from maTTenv.maps import map_utils
+import maTTenv.env_utils as util 
+from maTTenv.metadata import *
 
 
-class maTrackingBase(MultiAgentEnv):
+class maTrackingBase(gym.Env):
     def __init__(self, hyp, agent_dim, target_dim, q_true = 0.01, q = 0.01, is_training=True, known_noise=True):
 
         self.hyp = hyp

@@ -1,9 +1,9 @@
-import ttenv
+import maTTenv
 import numpy as np
 import argparse
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--env', help='environment ID', type=str, default='TargetTracking-v1')
+parser.add_argument('--env', help='environment ID', type=str, default='maTracking-v1')
 parser.add_argument('--render', help='whether to render', type=int, default=0)
 parser.add_argument('--record', help='whether to record', type=int, default=0)
 parser.add_argument('--ros', help='whether to use ROS', type=int, default=0)
@@ -14,12 +14,13 @@ parser.add_argument('--map', type=str, default="emptySmall")
 args = parser.parse_args()
 
 def main():
-    env = ttenv.make(args.env,
+    env = maTTenv.make(args.env,
                     render=args.render,
                     record=args.record,
                     ros=args.ros,
                     map_name=args.map,
                     directory=args.log_dir,
+                    num_agents=args.nb_agents,
                     num_targets=args.nb_targets,
                     is_training=False,
                     )
