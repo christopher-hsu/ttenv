@@ -15,12 +15,11 @@ edited by christopher-hsu from coco66 for multi_agent
 """
 
 import numpy as np
-from maTTenv.metadata import *
+from maTTenv.metadata import METADATA
 import maTTenv.env_utils as util
-# import pyInfoGathering as IGL
 
 class Agent(object):
-    def __init__(self, agent_id, dim, sampling_period, limit, collision_func, margin):
+    def __init__(self, agent_id, dim, sampling_period, limit, collision_func, margin=METADATA['margin']):
         self.agent_id = agent_id
         self.dim = dim
         self.sampling_period = sampling_period
@@ -43,8 +42,8 @@ class Agent(object):
 
 class AgentDoubleInt2D(Agent):
     def __init__(self, agent_id, dim, sampling_period, limit, collision_func, 
-                    margin, A=None, W=None):
-        super().__init__(agent_id, dim, sampling_period, limit, collision_func, margin)
+                    margin=METADATA['margin'], A=None, W=None):
+        super().__init__(agent_id, dim, sampling_period, limit, collision_func, margin=margin)
         self.A = np.eye(self.dim) if A is None else A
         self.W = W
 
@@ -55,8 +54,9 @@ class AgentDoubleInt2D(Agent):
             new_state += noise_sample
         if self.collision_check(new_state[:2]):
             new_state = self.collision_control(new_state)
+
         self.state = new_state
-        self.range_check()
+        # self.range_check()
 
     def collision_control(self, new_state):
         new_state[0] = self.state[0]
@@ -67,9 +67,15 @@ class AgentDoubleInt2D(Agent):
         return new_state
 
 class AgentSE2(Agent):
-    def __init__(self, agent_id, dim, sampling_period, limit, collision_func, margin, policy=None):
-        super().__init__(agent_id, dim, sampling_period, limit, collision_func, margin)
+    def __init__(self, agent_id, dim, sampling_period, limit, collision_func, 
+                        margin=METADATA['margin'], policy=None):
+        super().__init__(agent_id, dim, sampling_period, limit, collision_func, margin=margin)
         self.policy = policy
+
+    def reset(self, init_state):
+        super().reset(init_state)
+        if self.policy:
+            self.policy.reset(init_state)
 
     def update(self, control_input=None, margin_pos=None, col=False):
         """
@@ -85,7 +91,11 @@ class AgentSE2(Agent):
             is_col = 1
             new_state[:2] = self.state[:2]
             if self.policy is not None:
-                self.policy.collision(new_state)
+                # self.policy.collision(new_state)
+                corrected_policy = self.policy.collision(new_state)
+                if corrected_policy is not None:
+                    new_state = SE2DynamicsVel(self.state,
+                                        self.sampling_period, corrected_policy)
 
         elif margin_pos is not None:
             if type(margin_pos) != list:
@@ -117,95 +127,46 @@ def SE2Dynamics(x, dt, u):
 
 def SE2DynamicsVel(x, dt, u=None):  
     assert(len(x)==5) # x = [x,y,theta,v,w]
-    odom = SE2Dynamics(x[:3], dt, x[-2:])
-    return np.concatenate((odom, x[-2:]))
+    if u is None:
+        u = x[-2:]
+    odom = SE2Dynamics(x[:3], dt, u)
+    return np.concatenate((odom, u))
 
+# class Agent2DFixedPath(Agent):
+#     def __init__(self, dim, sampling_period, limit, collision_func, path, margin):
+#         Agent.__init__(self, dim, sampling_period, limit, collision_func, margin)
+#         self.path = path
+
+#     def update(self, margin_pos=None):
+#         # fixed policy for now
+#         self.t += 1
+#         self.state = np.concatenate((self.path[self.t][:2], self.path[self.t][-2:]))
+
+#     def reset(self, init_state):
+#         self.t = 0
+#         self.state = np.concatenate((self.path[self.t][:2], self.path[self.t][-2:]))
+#         
 class Agent2DFixedPath(Agent):
-    def __init__(self, dim, sampling_period, limit, collision_func, path, margin):
-        Agent.__init__(self, dim, sampling_period, limit, collision_func, margin)
+    def __init__(self, dim, sampling_period, limit, collision_func, path, margin=METADATA['margin']):
+        Agent.__init__(self, dim, sampling_period, limit, collision_func, margin=margin)
         self.path = path
 
     def update(self, margin_pos=None):
         # fixed policy for now
         self.t += 1
-        self.state = np.concatenate((self.path[self.t][:2], self.path[self.t][-2:]))
+        new_state = np.concatenate((self.path[self.t][:2], self.path[self.t][-2:]))
+        if margin_pos is not None:
+            if type(margin_pos) != list:
+                margin_pos = [margin_pos]
+            in_margin = False
+            while(True):
+                in_margin = self.margin_check(new_state[:2], margin_pos)
+                if in_margin:
+                    new_state[:2] = new_state[:2] + 0.01*(np.random.random((2,))-0.5)
+                else:
+                    break
+        self.state = new_state
 
     def reset(self, init_state):
         self.t = 0
         self.state = np.concatenate((self.path[self.t][:2], self.path[self.t][-2:]))
-        
-
-
-class Agent_InfoPlanner(Agent):
-    def __init__(self,  dim, sampling_period, limit, collision_func,  
-                    se2_env, sensor_obj, margin):
-        Agent.__init__(self, dim, sampling_period, limit, collision_func, margin)
-        self.se2_env = se2_env
-        self.sensor = sensor_obj
-        self.sampling_period = sampling_period
-        self.action_map = {}        
-        for (i,v) in enumerate([3,2,1,0]):
-            for (j,w) in enumerate([np.pi/2, 0, -np.pi/2]):
-                self.action_map[3*i+j] = (v,w)
-
-    def reset(self, init_state, belief_target):
-        self.agent = IGL.Robot(init_state, self.se2_env, belief_target, self.sensor)
-        self.state = self.get_state()
-        return self.state
-
-    def update(self, action, target_state):
-        action =  self.update_filter(action, target_state)
-        self.agent.applyControl([int(action)], 1)
-        self.state = self.get_state()
-
-    def get_state(self):
-        return np.concatenate((self.agent.getState().position[:2], [self.agent.getState().getYaw()]))
-
-    def get_state_object(self):
-        return self.agent.getState()
-
-    def observation(self, target_obj):
-        return self.agent.sensor.senseMultiple(self.get_state_object(), target_obj)
-
-    def get_belief_state(self):
-        return self.agent.tmm.getTargetState()
-
-    def get_belief_cov(self):
-        return self.agent.tmm.getCovarianceMatrix()
-
-    def update_belief(self, GaussianBelief):
-        self.agent.tmm.updateBelief(GaussianBelief.mean, GaussianBelief.cov)
-
-    def update_filter(self, action, target_state):
-        state = self.get_state()
-        control_input = self.action_map[action]
-        tw = self.sampling_period*control_input[1]
-        # Update the agent state 
-        if abs(tw) < 0.001:
-            diff = np.array([self.sampling_period*control_input[0]*np.cos(state[2]+tw/2),
-                    self.sampling_period*control_input[0]*np.sin(state[2]+tw/2),
-                    tw])
-        else:
-            diff = np.array([control_input[0]/control_input[1]*(np.sin(state[2]+tw) - np.sin(state[2])),
-                    control_input[0]/control_input[1]*(np.cos(state[2]) - np.cos(state[2]+tw)),
-                    tw])
-        new_state = state + diff
-        if len(target_state.shape)==1:
-            target_state = [target_state]
-        target_col = False
-        for n in range(target_state.shape[0]): # For each target
-            target_col = np.sqrt(np.sum((new_state[:2] - target_state[n][:2])**2)) < margin
-            if target_col:
-                break
-
-        if self.collision_check(new_state) or target_col: # no update 
-            new_action = 9 + action%3
-        else:
-            new_action = action
-        return new_action
-
-
-
-
-
-
