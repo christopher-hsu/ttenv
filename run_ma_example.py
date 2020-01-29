@@ -7,6 +7,7 @@ parser.add_argument('--env', help='environment ID', type=str, default='maTrackin
 parser.add_argument('--render', help='whether to render', type=int, default=0)
 parser.add_argument('--record', help='whether to record', type=int, default=0)
 parser.add_argument('--ros', help='whether to use ROS', type=int, default=0)
+parser.add_argument('--nb_agents', help='the number of agents', type=int, default=2)
 parser.add_argument('--nb_targets', help='the number of targets', type=int, default=1)
 parser.add_argument('--log_dir', help='a path to a directory to log your data', type=str, default='.')
 parser.add_argument('--map', type=str, default="emptySmall")
