@@ -4,7 +4,7 @@ from maTTenv.envs.maTracking_v1 import maTrackingEnv1
 from maTTenv.envs.maTracking_v2 import maTrackingEnv2
 
 def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
-                                        T_steps=None, num_targets=1, **kwargs):
+                            T_steps=None, num_agents=2, num_targets=1, **kwargs):
     """
     env_name : str
         name of an environment. (e.g. 'Cartpole-v0')
@@ -18,11 +18,11 @@ def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
         else:
             T_steps = 150
     if env_name == 'maTracking-v0':
-        env0 = maTrackingEnv0(**kwargs)
+        env0 = maTrackingEnv0(num_agents=num_agents, num_targets=num_targets, **kwargs)
     elif env_name == 'maTracking-v1':
-        env0 = maTrackingEnv1(**kwargs)
+        env0 = maTrackingEnv1(num_agents=num_agents, num_targets=num_targets, **kwargs)
     elif env_name == 'maTracking-v2':
-        env0 = maTrackingEnv2(**kwargs)
+        env0 = maTrackingEnv2(num_agents=num_agents, num_targets=num_targets, **kwargs)
 
     # elif env_name == 'TargetTracking-info1':
     #     from ttenv.infoplanner_python.target_tracking_infoplanner import TargetTrackingInfoPlanner1
@@ -31,14 +31,14 @@ def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
         raise ValueError('No such environment exists.')
 
     env = wrappers.TimeLimit(env0, max_episode_steps=T_steps)
-    if ros:
-        from ttenv.ros_wrapper import Ros
-        env = Ros(env)
+    # if ros:
+        # from ttenv.ros_wrapper import Ros
+        # env = Ros(env)
     if render:
-        from ttenv.display_wrapper import Display2D
+        from maTTenv.display_wrapper import Display2D
         env = Display2D(env, figID=figID)
     if record:
-        from ttenv.display_wrapper import Video2D
+        from maTTenv.display_wrapper import Video2D
         env = Video2D(env, dirname = directory)
 
     return env
