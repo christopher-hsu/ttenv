@@ -20,6 +20,7 @@ class KFbelief(object):
     def __init__(self, agent_id, dim, limit, dim_z=2, A=None, W=None,
                     obs_noise_func=None, collision_func=None):
         """
+        agent_id: id of agent being updated
         dim : dimension of state
         limit : An array of two vectors.
                 limit[0] = minimum values for the state,
