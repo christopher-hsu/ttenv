@@ -1,7 +1,4 @@
 from gym import wrappers
-from maTTenv.envs.maTracking_v0 import maTrackingEnv0
-from maTTenv.envs.maTracking_v1 import maTrackingEnv1
-from maTTenv.envs.maTracking_v2 import maTrackingEnv2
 
 def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
                             T_steps=None, num_agents=2, num_targets=1, **kwargs):
@@ -18,10 +15,13 @@ def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
         else:
             T_steps = 150
     if env_name == 'maTracking-v0':
+        from maTTenv.envs.maTracking_v0 import maTrackingEnv0
         env0 = maTrackingEnv0(num_agents=num_agents, num_targets=num_targets, **kwargs)
     elif env_name == 'maTracking-v1':
+        from maTTenv.envs.maTracking_v1 import maTrackingEnv1
         env0 = maTrackingEnv1(num_agents=num_agents, num_targets=num_targets, **kwargs)
     elif env_name == 'maTracking-v2':
+        from maTTenv.envs.maTracking_v2 import maTrackingEnv2
         env0 = maTrackingEnv2(num_agents=num_agents, num_targets=num_targets, **kwargs)
 
     # elif env_name == 'TargetTracking-info1':
