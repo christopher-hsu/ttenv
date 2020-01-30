@@ -16,7 +16,7 @@ edited by christopher-hsu from coco66 for multi_agent
 
 import numpy as np
 from maTTenv.metadata import METADATA
-import maTTenv.env_utils as util
+import maTTenv.utils as util
 
 class Agent(object):
     def __init__(self, agent_id, dim, sampling_period, limit, collision_func, margin=METADATA['margin']):

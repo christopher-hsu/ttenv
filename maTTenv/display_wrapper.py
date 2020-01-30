@@ -11,7 +11,7 @@ matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 from matplotlib import patches
 from matplotlib import animation
-from envs.maTracking.metadata import *
+from maTTenv.metadata import *
 
 class Display2D(Wrapper):
     def __init__(self, env, figID = 0, skip = 1, confidence=0.95):
@@ -117,19 +117,26 @@ class Display2D(Wrapper):
         return self.env.reset(**kwargs)
 
 class Video2D(Wrapper):
-    def __init__(self, env, dirname = '', skip = 1, dpi=80):
+    def __init__(self, env, dirname = '', skip = 1, dpi=80, local_view=False):
         super(Video2D, self).__init__(env)
+        self.local_view = local_view
         self.skip = skip
         self.moviewriter = animation.FFMpegWriter()
         fname = os.path.join(dirname, 'train_%d.mp4'%np.random.randint(0,20))
         self.moviewriter.setup(fig=env.fig, outfile=fname, dpi=dpi)
+        if self.local_view:
+            self.moviewriter0 = animation.FFMpegWriter()
+            fname0 = os.path.join(dirname, 'train_local_%d.mp4'%np.random.randint(0,20))
+            self.moviewriter0.setup(fig=env.fig0, outfile=fname0, dpi=dpi)
         self.n_frames = 0
 
-    def render(self, traj_num=0, *args, **kwargs):
+    def render(self, *args, **kwargs):
         if self.n_frames % self.skip == 0:
         #if traj_num % self.skip == 0:
-            self.env.render(record=True, traj_num=traj_num, *args, **kwargs)
+            self.env.render(record=True, *args, **kwargs)
         self.moviewriter.grab_frame()
+        if self.local_view:
+            self.moviewriter0.grab_frame()
         self.n_frames += 1
 
     def reset(self, **kwargs):
