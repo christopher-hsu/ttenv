@@ -173,26 +173,30 @@ class maTrackingBase(gym.Env):
         is_agent_valid = False
         while(not is_agent_valid):
             init_pose = {}
-            if self.MAP.map is None:
-                if blocked:
-                    raise ValueError('Unable to find a blocked initial condition. There is no obstacle in this map.')
-                a_init = self.agent_init_pos[:2]
-                is_agent_valid = True
-            else:
-                while(not is_agent_valid):
-                    a_init = np.random.random((2,)) * (self.MAP.mapmax-self.MAP.mapmin) + self.MAP.mapmin
-                    is_agent_valid = not(map_utils.is_collision(self.MAP, a_init))
+            init_pose['agent'] = []
+            for ii in range(self.num_agents):
+                if self.MAP.map is None and ii==1:
+                    if blocked:
+                        raise ValueError('Unable to find a blocked initial condition. There is no obstacle in this map.')
+                    a_init = self.agent_init_pos[:2]
+                    is_agent_valid = True
+                else:
+                    while(not is_agent_valid):
+                        a_init = np.random.random((2,)) * (self.MAP.mapmax-self.MAP.mapmin) + self.MAP.mapmin
+                        is_agent_valid = not(map_utils.is_collision(self.MAP, a_init))
+                init_pose_agent = [a_init[0], a_init[1], np.random.random() * 2 * np.pi - np.pi]
+                init_pose['agent'].append(init_pose_agent)
 
-            init_pose['agent'] = [a_init[0], a_init[1], np.random.random() * 2 * np.pi - np.pi]
             init_pose['targets'], init_pose['belief_targets'] = [], []
-            for i in range(self.num_targets):
+            for jj in range(self.num_targets):
                 count, is_target_valid = 0, False
                 while(not is_target_valid):
+                    rand_agent = np.random.randint(self.num_agents)
                     is_target_valid, init_pose_target = self.gen_rand_pose(
-                        init_pose['agent'][:2], init_pose['agent'][2],
+                        init_pose['agent'][rand_agent][:2], init_pose['agent'][rand_agent][2],
                         lin_dist_range[0], lin_dist_range[1],
                         ang_dist_range_target[0], ang_dist_range_target[1])
-                    is_blocked = map_utils.is_blocked(self.MAP, init_pose['agent'][:2], init_pose_target[:2])
+                    is_blocked = map_utils.is_blocked(self.MAP, init_pose['agent'][rand_agent][:2], init_pose_target[:2])
                     if is_target_valid:
                         is_target_valid = (blocked == is_blocked)
                     count += 1
@@ -204,7 +208,7 @@ class maTrackingBase(gym.Env):
                 count, is_belief_valid, init_pose_belief = 0, False, np.zeros((2,))
                 while((not is_belief_valid) and is_target_valid):
                     is_belief_valid, init_pose_belief = self.gen_rand_pose(
-                        init_pose['agent'][:2], init_pose['targets'][i][2],
+                        init_pose['agent'][rand_agent][:2], init_pose['targets'][jj][2],
                         lin_dist_range[0], lin_dist_range[1],
                         ang_dist_range_belief[0], ang_dist_range_belief[1])
                     count += 1
