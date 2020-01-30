@@ -138,7 +138,7 @@ class maTrackingEnv1(maTrackingBase):
                 obs = self.observation(self.targets[jj], self.agents[ii])
                 observed.append(obs[0])
                 self.belief_targets[jj].predict() # Belief state at t+1
-                if obs[0]:
+                if obs[0]: # if observed, update the target belief.
                     self.belief_targets[jj].update(obs[1], self.agents[ii].state)
 
             obstacles_pt = map_utils.get_closest_obstacle(self.MAP, self.agents[ii].state)
