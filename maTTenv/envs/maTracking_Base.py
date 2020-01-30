@@ -83,7 +83,9 @@ class maTrackingBase(gym.Env):
         raise NotImplementedError
 
     def observation(self, target, agent):
-        r, alpha, _ = util.relative_measure(target.state, agent.state) # True Value     
+        # r, alpha, _ = util.relative_measure(target.state, agent.state) # True Value 
+        r, alpha, _ = util.xyg2polarb(target.state[:2],
+                             agent.state[:2], agent.state[2])    
         observed = (r <= self.sensor_r) \
                     & (abs(alpha) <= self.fov/2/180*np.pi) \
                     & (not(map_utils.is_blocked(self.MAP, agent.state, target.state)))
