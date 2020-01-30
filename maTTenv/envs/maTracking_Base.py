@@ -5,7 +5,7 @@ import gym
 from gym import spaces, logger
 
 from maTTenv.maps import map_utils
-import maTTenv.env_utils as util 
+import maTTenv.utils as util 
 from maTTenv.metadata import METADATA
 
 
@@ -30,14 +30,13 @@ class maTrackingBase(gym.Env):
         self.is_training = is_training
 
         self.sampling_period = 0.5 # sec
-        self.q = q if self.num_targets==1 else 0.1*q
         self.sensor_r_sd = METADATA['sensor_r_sd']
         self.sensor_b_sd = METADATA['sensor_b_sd']
         self.sensor_r = METADATA['sensor_r']
         self.fov = METADATA['fov']
         map_dir_path = '/'.join(map_utils.__file__.split('/')[:-1])
         self.MAP = map_utils.GridMap(
-            map_path=os.path.join(map_dir_path, hyp['map_name']), 
+            map_path=os.path.join(map_dir_path, map_name), 
             r_max = self.sensor_r, fov = self.fov/180.0*np.pi,
             margin2wall = METADATA['margin2wall'])
         # LIMITS
