@@ -41,12 +41,10 @@ class maTrackingEnv1(maTrackingBase):
         self.target_dim = 4
         self.target_init_vel = METADATA['target_init_vel']*np.ones((2,))
         # LIMIT
-        # self.vel_limit = np.array([2.0, 2.0])
         self.limit = {} # 0: low, 1:highs
         self.limit['agent'] = [np.concatenate((self.MAP.mapmin,[-np.pi])), np.concatenate((self.MAP.mapmax, [np.pi]))]
         self.limit['target'] = [np.concatenate((self.MAP.mapmin,[-METADATA['target_vel_limit'], -METADATA['target_vel_limit']])),
                                 np.concatenate((self.MAP.mapmax, [METADATA['target_vel_limit'], METADATA['target_vel_limit']]))]
-        # self.limit['target'] = [np.concatenate((self.MAP.mapmin,  -self.vel_limit)), np.concatenate((self.MAP.mapmax, self.vel_limit))]
         rel_vel_limit = METADATA['target_vel_limit'] + METADATA['action_v'][0] # Maximum relative speed
         self.limit['state'] = [np.concatenate(([0.0, -np.pi, -rel_vel_limit, -10*np.pi, -50.0, 0.0]*self.num_targets, [0.0, -np.pi ])),
                                np.concatenate(([600.0, np.pi, rel_vel_limit, 10*np.pi,  50.0, 2.0]*self.num_targets, [self.sensor_r, np.pi]))]
@@ -74,13 +72,15 @@ class maTrackingEnv1(maTrackingBase):
 
     def setup_agents(self):
         self.agents = [AgentSE2(agent_id = 'agent-' + str(i), 
-                        dim=self.agent_dim, sampling_period=self.sampling_period, limit=self.limit['agent'], 
+                        dim=self.agent_dim, sampling_period=self.sampling_period, 
+                        limit=self.limit['agent'], 
                         collision_func=lambda x: map_utils.is_collision(self.MAP, x))
                         for i in range(self.num_agents)]
 
     def setup_targets(self):
         self.targets = [AgentDoubleInt2D(agent_id = 'agent-' + str(i),
-                        dim=self.target_dim, sampling_period=self.sampling_period, limit=self.limit['target'],
+                        dim=self.target_dim, sampling_period=self.sampling_period, 
+                        limit=self.limit['target'],
                         collision_func=lambda x: map_utils.is_collision(self.MAP, x),
                         A=self.targetA, W=self.target_true_noise_sd) 
                         for i in range(self.num_targets)]
