@@ -27,10 +27,10 @@ def global_relative_measure(x_target, x_main):
     global_state = np.ndarray.flatten(np.vstack((r,alpha)).T)
     return global_state
 
-# def coord_change2b(vec, ang):
-#     assert(len(vec) == 2)
-#     # R^T * v
-#     return np.matmul([[np.cos(ang), np.sin(ang)], [-np.sin(ang), np.cos(ang)]], vec)
+def coord_change2b(vec, ang):
+    assert(len(vec) == 2)
+    # R^T * v
+    return np.matmul([[np.cos(ang), np.sin(ang)], [-np.sin(ang), np.cos(ang)]], vec)
 
 def xyg2polarb(xy_target, xy_b, theta_b):
     # Transformation of xy_target (x,y) in the global frame to polar
