@@ -20,7 +20,6 @@ class KFbelief(object):
     def __init__(self, agent_id, dim, limit, dim_z=2, A=None, W=None,
                     obs_noise_func=None, collision_func=None):
         """
-        agent_id: id of agent being updated
         dim : dimension of state
         limit : An array of two vectors.
                 limit[0] = minimum values for the state,
@@ -52,9 +51,16 @@ class KFbelief(object):
         self.state = np.clip(state_new, self.limit[0], self.limit[1])
 
     def update(self, z_t, x_t):
+        """
+        Parameters
+        --------
+        z_t : observation - radial and angular distances from the agent.
+        x_t : agent state (x, y, orientation) in the global frame.
+        """
         # Kalman Filter Update
-        r_pred, alpha_pred, diff_pred = util.xyg2polarb(self.state[:2],
-                                                            x_t[:2], x_t[2])
+        r_pred, alpha_pred = util.relative_distance_polar(
+                        self.state[:2], x_t[:2], x_t[2])
+        diff_pred = self.state[:2] - x_t[:2]
         if self.dim == 2:
             Hmat = np.array([[diff_pred[0],diff_pred[1]],
                         [-diff_pred[1]/r_pred, diff_pred[0]/r_pred]])/r_pred
@@ -103,8 +109,8 @@ class UKFbelief(object):
         self.obs_noise_func = obs_noise_func
         self.collision_func = collision_func
 
-        def hx(y, agent_state, measure_func=util.xyg2polarb):
-            r_pred, alpha_pred, _ = measure_func(y[:2], agent_state[:2],
+        def hx(y, agent_state, measure_func=util.relative_distance_polar):
+            r_pred, alpha_pred = measure_func(y[:2], agent_state[:2],
                                                                 agent_state[2])
             return np.array([r_pred, alpha_pred])
 
@@ -187,7 +193,7 @@ class UKFbelief(object):
         self.ukf.predict(u=u_t)
 
         if observed:
-            r_pred, alpha_pred, _ = util.xyg2polarb(self.ukf.x[:2], x_t[:2], x_t[2])
+            r_pred, alpha_pred = util.relative_distance_polar(self.ukf.x[:2], x_t[:2], x_t[2])
             self.ukf.update(z_t, R=self.obs_noise_func((r_pred, alpha_pred)),
                                 agent_state=x_t)
 
