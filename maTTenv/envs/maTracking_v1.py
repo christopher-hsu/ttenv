@@ -90,7 +90,7 @@ class maTrackingEnv1(maTrackingBase):
     def reset(self,**kwargs):
         """
         Agents are given random positions in the map, targets are given random positions near a random agent.
-        Return a full state dict with agent ids (keys) that refer to their observation and global state
+        Return an observation state dict with agent ids (keys) that refer to their observation
         """
         obs_dict = {}
         init_pose = self.get_init_pose(**kwargs)
