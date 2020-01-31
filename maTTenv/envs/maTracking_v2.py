@@ -168,6 +168,7 @@ class maTrackingEnv2(maTrackingBase):
 
             action_vw = self.action_map[action_dict[agent_id]]
             _ = self.agents[ii].update(action_vw, [t.state[:2] for t in self.targets])
+            locations.append(self.agents[ii].state[:2])
             
             observed = []
             for jj in range(self.num_targets):
