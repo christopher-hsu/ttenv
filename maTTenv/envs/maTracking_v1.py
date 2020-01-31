@@ -106,8 +106,9 @@ class maTrackingEnv1(maTrackingBase):
             self.targets[jj].reset(np.concatenate((init_pose['targets'][jj][:2], self.target_init_vel)))
             #For each agent calculate belief of all targets
             for kk in range(self.num_agents):
-                r, alpha, _ = util.xyg2polarb(self.belief_targets[jj].state[:2],
-                                     self.agents[kk].state[:2], self.agents[kk].state[2])
+                r, alpha = util.relative_distance_polar(self.belief_targets[jj].state[:2],
+                                            xy_base=self.agents[kk].state[:2], 
+                                            theta_base=self.agents[kk].state[2])
                 logdetcov = np.log(LA.det(self.belief_targets[jj].cov))
                 obs_dict[self.agents[kk].agent_id].extend([r, alpha, 0.0, 0.0, logdetcov, 0.0])
         for agent_id in obs_dict:
@@ -148,9 +149,10 @@ class maTrackingEnv1(maTrackingBase):
             if obstacles_pt is None:
                 obstacles_pt = (self.sensor_r, np.pi)
             for kk in range(self.num_targets):
-                r_b, alpha_b, _ = util.xyg2polarb(self.belief_targets[kk].state[:2],
-                                        self.agents[ii].state[:2], self.agents[ii].state[-1])
-                r_dot_b, alpha_dot_b = util.xyg2polarb_dot_2(
+                r_b, alpha_b = util.relative_distance_polar(self.belief_targets[kk].state[:2],
+                                        xy_base=self.agents[ii].state[:2], 
+                                        theta_base=self.agents[ii].state[-1])
+                r_dot_b, alpha_dot_b = util.relative_velocity_polar(
                                         self.belief_targets[kk].state[:2],
                                         self.belief_targets[kk].state[2:],
                                         self.agents[ii].state[:2], self.agents[ii].state[-1],

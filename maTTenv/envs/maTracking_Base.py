@@ -84,8 +84,9 @@ class maTrackingBase(gym.Env):
 
     def observation(self, target, agent):
         # r, alpha, _ = util.relative_measure(target.state, agent.state) # True Value 
-        r, alpha, _ = util.xyg2polarb(target.state[:2],
-                             agent.state[:2], agent.state[2])    
+        r, alpha = util.relative_distance_polar(target.state[:2],
+                                            xy_base=agent.state[:2], 
+                                            theta_base=agent.state[2])    
         observed = (r <= self.sensor_r) \
                     & (abs(alpha) <= self.fov/2/180*np.pi) \
                     & (not(map_utils.is_blocked(self.MAP, agent.state, target.state)))
