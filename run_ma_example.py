@@ -44,3 +44,35 @@ def main():
 
 if __name__ == "__main__":
     main()
+    """
+    Examples:
+        >>> env = MyMultiAgentEnv()
+        >>> obs = env.reset()
+        >>> print(obs)
+        {
+            "agent_0": [2.4, 1.6],
+            "car_1": [3.4, -3.2],
+            "traffic_light_1": [0, 3, 5, 1],
+        }
+        >>> obs, rewards, dones, infos = env.step(
+            action_dict={
+                "agent_0": 1, "car_1": 0, "traffic_light_1": 2,
+            })
+        >>> print(rewards)
+        {
+            "agent_0": 3,
+            "car_1": -1,
+            "traffic_light_1": 0,
+        }
+        >>> print(dones)
+        {
+            "agent_0": False,  # agent_0 is still running
+            "car_1": True,     # car_1 is done
+            "__all__": False,  # the env is not done
+        }
+        >>> print(infos)
+        {
+            "agent_0": {},  # info for agent_0
+            "car_1": {},    # info for car_1
+        }
+    """
