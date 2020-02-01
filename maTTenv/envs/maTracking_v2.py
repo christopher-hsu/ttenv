@@ -220,5 +220,4 @@ class maTrackingEnv2(maTrackingBase):
                     obs_dict[agent_id].extend([r,alpha])
             full_state[agent_id] = {'obs':np.asarray(obs_dict[agent_id]), 
                                     'state':np.concatenate((obs_dict[agent_id],global_state))}
-        pdb.set_trace()
         return full_state, reward_dict, done_dict, info_dict
