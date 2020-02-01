@@ -169,7 +169,6 @@ class maTrackingEnv2(maTrackingBase):
             self.targets[n].update() 
             locations.append(self.targets[n].state[:2])
         # Agents move (t -> t+1) and observe the targets
-        tot_observed = []
         for ii, agent_id in enumerate(action_dict):
             obs_dict[self.agents[ii].agent_id] = []
             reward_dict[self.agents[ii].agent_id] = []
