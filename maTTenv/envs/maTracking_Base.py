@@ -7,12 +7,14 @@ from gym import spaces, logger
 from maTTenv.maps import map_utils
 import maTTenv.utils as util 
 from maTTenv.metadata import METADATA
+# rllib style env
+from maTTenv.rllib_modules.multi_agent_env import MultiAgentEnv
 
 
-class maTrackingBase(gym.Env):
+class maTrackingBase(MultiAgentEnv):    #gym.Env for gym style env
     def __init__(self, num_agents=2, num_targets=1, map_name='empty',
                         is_training=True, known_noise=True, **kwargs):
-        self.seed()
+        # self.seed()   #used with gym
         self.id = 'maTracking-base'
         self.action_space = spaces.Discrete(len(METADATA['action_v']) * \
                                                 len(METADATA['action_w']))
