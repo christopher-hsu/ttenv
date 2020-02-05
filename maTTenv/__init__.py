@@ -1,7 +1,7 @@
 from gym import wrappers
 
 def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
-                            T_steps=None, num_agents=2, num_targets=1, **kwargs):
+                    T_steps=None, num_agents=2, num_targets=1, **kwargs):
     """
     env_name : str
         name of an environment. (e.g. 'Cartpole-v0')
@@ -23,6 +23,9 @@ def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
     elif env_name == 'maTracking-v2':
         from maTTenv.envs.maTracking_v2 import maTrackingEnv2
         env0 = maTrackingEnv2(num_agents=num_agents, num_targets=num_targets, **kwargs)
+    elif env_name == 'maTracking-v3':
+        from maTTenv.envs.maTracking_v3 import maTrackingEnv3
+        env0 = maTrackingEnv3(num_agents=num_agents, num_targets=num_targets, **kwargs)
 
     # elif env_name == 'TargetTracking-info1':
     #     from ttenv.infoplanner_python.target_tracking_infoplanner import TargetTrackingInfoPlanner1

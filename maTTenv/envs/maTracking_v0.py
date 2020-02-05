@@ -31,8 +31,10 @@ maTrackingEnv0 : Static Target model + noise - No Velocity Estimate
 
 class maTrackingEnv0(maTrackingBase):
 
-    def __init__(self, num_agents=2, num_targets=1, map_name='empty', is_training=True, known_noise=True, **kwargs):
-        super().__init__(num_agents=num_agents, num_targets=num_targets, map_name=map_name)
+    def __init__(self, num_agents=2, num_targets=2, map_name='empty', 
+                        is_training=True, known_noise=True, **kwargs):
+        super().__init__(num_agents=num_agents, num_targets=num_targets, 
+                        map_name=map_name, is_training=is_training)
        
         self.id = 'maTracking-v0'
         self.agent_dim = 3
@@ -120,8 +122,9 @@ class maTrackingEnv0(maTrackingBase):
                     self.belief_targets[jj].update(obs[1], self.agents[ii].state)
 
             obstacles_pt = map_utils.get_closest_obstacle(self.MAP, self.agents[ii].state)
-            reward, done, mean_nlogdetcov = self.get_reward(obstacles_pt, observed, self.is_training)
-            reward_dict[agent_id], done_dict[agent_id], info_dict[agent_id] = reward, done, mean_nlogdetcov
+            #Reward after each agent step
+            # reward, done, mean_nlogdetcov = self.get_reward(obstacles_pt, observed, self.is_training)
+            # reward_dict[agent_id], done_dict[agent_id], info_dict[agent_id] = reward, done, mean_nlogdetcov
 
             if obstacles_pt is None:
                 obstacles_pt = (self.sensor_r, np.pi)
@@ -132,4 +135,7 @@ class maTrackingEnv0(maTrackingBase):
                 obs_dict[agent_id].extend([r_b, alpha_b, 
                                         np.log(LA.det(self.belief_targets[kk].cov)), float(observed[kk])])
             obs_dict[agent_id].extend([obstacles_pt[0], obstacles_pt[1]])
+        # Get all rewards after all agents and targets move (t -> t+1)
+        reward, done, mean_nlogdetcov = self.get_reward(obstacles_pt, observed, self.is_training)
+        reward_dict['__all__'], done_dict['__all__'], info_dict['__all__'] = reward, done, mean_nlogdetcov
         return obs_dict, reward_dict, done_dict, info_dict
