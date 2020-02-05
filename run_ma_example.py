@@ -8,7 +8,7 @@ parser.add_argument('--render', help='whether to render', type=int, default=0)
 parser.add_argument('--record', help='whether to record', type=int, default=0)
 parser.add_argument('--ros', help='whether to use ROS', type=int, default=0)
 parser.add_argument('--nb_agents', help='the number of agents', type=int, default=2)
-parser.add_argument('--nb_targets', help='the number of targets', type=int, default=1)
+parser.add_argument('--nb_targets', help='the number of targets', type=int, default=2)
 parser.add_argument('--log_dir', help='a path to a directory to log your data', type=str, default='.')
 parser.add_argument('--map', type=str, default="emptySmall")
 
@@ -27,10 +27,11 @@ def main():
                     )
     nlogdetcov = []
     action_dict = {}
-    done = False
+    done = {'__all__':False}
 
     obs = env.reset()
-    while(not done):
+    # See below why this check is needed for training or eval loop
+    while(type(done) is dict):
         if args.render:
             env.render()
 
@@ -65,7 +66,8 @@ if __name__ == "__main__":
         }
         >>> print(done)
         #Due to gym wrapper, done at TimeLimit is bool, True.
-        #During episode, it is a dict
+        #During episode, it is a dict so..
+        #While done is a dict keep running
         {
             "agent_0": False,  # agent_0 is still running
             "agent_1": True,   # agent_1 is done
