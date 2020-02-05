@@ -35,7 +35,7 @@ maTargetTrackingEnv2 : Agents locations included in observation state
 
 class maTrackingEnv2(maTrackingBase):
 
-    def __init__(self, num_agents=2, num_targets=1, map_name='empty', 
+    def __init__(self, num_agents=2, num_targets=2, map_name='empty', 
                         is_training=True, known_noise=True, **kwargs):
         super().__init__(num_agents=num_agents, num_targets=num_targets, 
                         map_name=map_name, is_training=is_training)
@@ -56,10 +56,7 @@ class maTrackingEnv2(maTrackingBase):
                                 np.concatenate(([600.0, np.pi, rel_vel_limit, 10*np.pi,  50.0, 2.0]*self.num_targets, 
                                 np.concatenate(([self.sensor_r, np.pi],
                                 [600.0, np.pi]*(self.num_agents-1)))))]
-        self.limit['global'] = [np.concatenate((self.limit['state'][0],np.array([0.0,-np.pi]*(self.num_targets+self.num_agents)))),
-                                np.concatenate((self.limit['state'][1],np.array([600.0,np.pi]*(self.num_targets+self.num_agents))))]
         self.observation_space = spaces.Box(self.limit['state'][0], self.limit['state'][1], dtype=np.float32)
-        self.global_space = spaces.Box(self.limit['global'][0], self.limit['global'][1], dtype=np.float32)
         self.targetA = np.concatenate((np.concatenate((np.eye(2), self.sampling_period*np.eye(2)), axis=1), 
                                         [[0,0,1,0],[0,0,0,1]]))
         self.target_noise_cov = METADATA['const_q'] * np.concatenate((
@@ -106,10 +103,6 @@ class maTrackingEnv2(maTrackingBase):
         Return a full state dict with agent ids (keys) that refer to their observation and global state
         """
         obs_dict = {}
-        locations = []
-        global_state = {}
-        full_state = {}
-
         init_pose = self.get_init_pose(**kwargs)
         # Initialize agents
         for ii in range(self.num_agents):
@@ -121,36 +114,26 @@ class maTrackingEnv2(maTrackingBase):
                         init_state=np.concatenate((init_pose['belief_targets'][jj][:2], np.zeros(2))),
                         init_cov=self.target_init_cov)
             self.targets[jj].reset(np.concatenate((init_pose['targets'][jj][:2], self.target_init_vel)))
-            locations.append(self.targets[jj].state[:2])
-            #For each agent calculate belief of all targets
+            # For each agent calculate belief of all targets
             for kk in range(self.num_agents):
                 r, alpha = util.relative_distance_polar(self.belief_targets[jj].state[:2],
                                             xy_base=self.agents[kk].state[:2], 
                                             theta_base=self.agents[kk].state[2])
                 logdetcov = np.log(LA.det(self.belief_targets[jj].cov))
                 obs_dict[self.agents[kk].agent_id].extend([r, alpha, 0.0, 0.0, logdetcov, 0.0])
-        # All targets and agents locations relative to map origin (targets then agents)
-        for n in range(self.num_agents):
-            locations.append(self.agents[n].state[:2])
-        global_state = util.global_relative_measure(np.array(locations), self.MAP.origin)
-        # Full state dict         
+        # Relative location from agent_id to all other agents
         for m, agent_id in enumerate(obs_dict):
             obs_dict[agent_id].extend([self.sensor_r, np.pi])
-            # Relative location and past action of all other agents
             for p, ids in enumerate(obs_dict):
                 if agent_id != ids:
                     r, alpha = util.relative_distance_polar(np.array(self.agents[p].state[:2]),
                                             xy_base=self.agents[m].state[:2], 
                                             theta_base=self.agents[m].state[2])
                     obs_dict[agent_id].extend([r,alpha])
-            full_state[agent_id] = {'obs':np.asarray(obs_dict[agent_id]), 
-                                    'state':np.concatenate((obs_dict[agent_id],global_state))}
-        return full_state
+        return obs_dict
 
     def step(self, action_dict):
         obs_dict = {}
-        locations = []
-        full_state = {}
         reward_dict = {}
         done_dict = {'__all__':False}
         info_dict = {}
@@ -158,7 +141,6 @@ class maTrackingEnv2(maTrackingBase):
         # Targets move (t -> t+1)
         for n in range(self.num_targets):
             self.targets[n].update() 
-            locations.append(self.targets[n].state[:2])
         # Agents move (t -> t+1) and observe the targets
         for ii, agent_id in enumerate(action_dict):
             obs_dict[self.agents[ii].agent_id] = []
@@ -167,7 +149,6 @@ class maTrackingEnv2(maTrackingBase):
 
             action_vw = self.action_map[action_dict[agent_id]]
             _ = self.agents[ii].update(action_vw, [t.state[:2] for t in self.targets])
-            locations.append(self.agents[ii].state[:2])
             
             observed = []
             for jj in range(self.num_targets):
@@ -195,20 +176,15 @@ class maTrackingEnv2(maTrackingBase):
                                         np.log(LA.det(self.belief_targets[kk].cov)), 
                                         float(observed[kk])])
             obs_dict[agent_id].extend([obstacles_pt[0], obstacles_pt[1]])
-        #Global state for each agent (ref is origin)
-        global_state = util.global_relative_measure(np.array(locations), self.MAP.origin)
-        # Full state dict         
+        # Relative location from agent_id to all other agents
         for m, agent_id in enumerate(obs_dict):
             for p, ids in enumerate(obs_dict):
                 if agent_id != ids:
-                    # Relative location and recent action of all other agents
                     r, alpha = util.relative_distance_polar(np.array(self.agents[p].state[:2]),
                                             xy_base=self.agents[m].state[:2], 
                                             theta_base=self.agents[m].state[2])
                     obs_dict[agent_id].extend([r,alpha])
-            full_state[agent_id] = {'obs':np.asarray(obs_dict[agent_id]), 
-                                    'state':np.concatenate((obs_dict[agent_id],global_state))}
         # Get all rewards after all agents and targets move (t -> t+1)
         reward, done, mean_nlogdetcov = self.get_reward(obstacles_pt, observed, self.is_training)
         reward_dict['__all__'], done_dict['__all__'], info_dict['__all__'] = reward, done, mean_nlogdetcov
-        return full_state, reward_dict, done_dict, info_dict
+        return obs_dict, reward_dict, done_dict, info_dict
