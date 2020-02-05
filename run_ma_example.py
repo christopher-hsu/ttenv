@@ -39,7 +39,7 @@ def main():
             action_dict[agent_id] = env.action_space.sample()
 
         obs, rew, done, info = env.step(action_dict)
-        nlogdetcov.append(info['__all__'])
+        nlogdetcov.append(info['mean_nlogdetcov'])
 
     print("Sum of negative logdet of the target belief covariances : %.2f"%np.sum(nlogdetcov))
 
@@ -77,6 +77,5 @@ if __name__ == "__main__":
         {
             "agent_0": {},  # info for agent_0
             "agent_1": {},  # info for agent_1
-            "__all__": {},  # info for all
         }
     """

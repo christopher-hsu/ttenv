@@ -163,5 +163,5 @@ class maTrackingEnv1(maTrackingBase):
             obs_dict[agent_id].extend([obstacles_pt[0], obstacles_pt[1]])
         # Get all rewards after all agents and targets move (t -> t+1)
         reward, done, mean_nlogdetcov = self.get_reward(obstacles_pt, observed, self.is_training)
-        reward_dict['__all__'], done_dict['__all__'], info_dict['__all__'] = reward, done, mean_nlogdetcov
+        reward_dict['__all__'], done_dict['__all__'], info_dict['mean_nlogdetcov'] = reward, done, mean_nlogdetcov
         return obs_dict, reward_dict, done_dict, info_dict
