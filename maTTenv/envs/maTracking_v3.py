@@ -44,14 +44,14 @@ maTargetTrackingEnv2 : Agents locations included in observation state
 }
 """
 
-class maTrackingEnv2(maTrackingBase):
+class maTrackingEnv3(maTrackingBase):
 
     def __init__(self, num_agents=2, num_targets=1, map_name='empty', 
                         is_training=True, known_noise=True, **kwargs):
         super().__init__(num_agents=num_agents, num_targets=num_targets, 
                         map_name=map_name, is_training=is_training)
 
-        self.id = 'maTracking-v2'
+        self.id = 'maTracking-v3'
         self.agent_dim = 3
         self.target_dim = 4
         self.target_init_vel = METADATA['target_init_vel']*np.ones((2,))
