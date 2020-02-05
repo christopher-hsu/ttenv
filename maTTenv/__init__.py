@@ -1,7 +1,7 @@
 from gym import wrappers
 
 def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
-                            T_steps=None, num_agents=2, num_targets=1, **kwargs):
+                    T_steps=None, num_agents=2, num_targets=1, **kwargs):
     """
     env_name : str
         name of an environment. (e.g. 'Cartpole-v0')

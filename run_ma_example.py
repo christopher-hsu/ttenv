@@ -27,8 +27,9 @@ def main():
                     )
     nlogdetcov = []
     action_dict = {}
+    done = False
 
-    obs, done = env.reset(), False
+    obs = env.reset()
     while(not done):
         if args.render:
             env.render()
@@ -37,8 +38,7 @@ def main():
             action_dict[agent_id] = env.action_space.sample()
 
         obs, rew, done, info = env.step(action_dict)
-        done = done['__all__']
-        # nlogdetcov.append(info['mean_nlogdetcov'])
+        nlogdetcov.append(info['__all__'])
 
     print("Sum of negative logdet of the target belief covariances : %.2f"%np.sum(nlogdetcov))
 
@@ -51,28 +51,30 @@ if __name__ == "__main__":
         >>> print(obs)
         {
             "agent_0": [2.4, 1.6],
-            "car_1": [3.4, -3.2],
-            "traffic_light_1": [0, 3, 5, 1],
+            "agent_1": [3.4, -3.2],
         }
         >>> obs, rewards, dones, infos = env.step(
             action_dict={
-                "agent_0": 1, "car_1": 0, "traffic_light_1": 2,
+                "agent_0": 1, "agent_1": 0,
             })
-        >>> print(rewards)
+        >>> print(rew)
         {
             "agent_0": 3,
-            "car_1": -1,
-            "traffic_light_1": 0,
+            "agent_1": -1,
+            "__all__": 2,
         }
-        >>> print(dones)
+        >>> print(done)
+        #Due to gym wrapper, done at TimeLimit is bool, True.
+        #During episode, it is a dict
         {
             "agent_0": False,  # agent_0 is still running
-            "car_1": True,     # car_1 is done
+            "agent_1": True,   # agent_1 is done
             "__all__": False,  # the env is not done
         }
-        >>> print(infos)
+        >>> print(info)
         {
             "agent_0": {},  # info for agent_0
-            "car_1": {},    # info for car_1
+            "agent_1": {},  # info for agent_1
+            "__all__": {},  # info for all
         }
     """

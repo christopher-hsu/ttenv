@@ -31,23 +31,14 @@ maTargetTrackingEnv2 : Agents locations included in observation state
     Agent : SE2 model, [x,y,theta]
     Target : Double Integrator model, [x,y,xdot,ydot]
     Belief Target : KF, Double Integrator model
-    global state: [d, alpha] * (nb_targets+nb_agents) in ref to origin
-
->>>print(full_state)
-{
-    'agent-0':
-    {
-            'obs':[obs state]
-            'state':[global state]
-    },
-    'agent-1':{}
-}
 """
 
 class maTrackingEnv2(maTrackingBase):
 
-    def __init__(self, num_agents=2, num_targets=1, map_name='empty', is_training=True, known_noise=True, **kwargs):
-        super().__init__(num_agents=num_agents, num_targets=num_targets, map_name=map_name)
+    def __init__(self, num_agents=2, num_targets=1, map_name='empty', 
+                        is_training=True, known_noise=True, **kwargs):
+        super().__init__(num_agents=num_agents, num_targets=num_targets, 
+                        map_name=map_name, is_training=is_training)
 
         self.id = 'maTracking-v2'
         self.agent_dim = 3
@@ -188,8 +179,6 @@ class maTrackingEnv2(maTrackingBase):
                     self.belief_targets[jj].update(obs[1], self.agents[ii].state)
 
             obstacles_pt = map_utils.get_closest_obstacle(self.MAP, self.agents[ii].state)
-            reward, done, mean_nlogdetcov = self.get_reward(obstacles_pt, observed, self.is_training)
-            reward_dict[agent_id], done_dict[agent_id], info_dict[agent_id] = reward, done, mean_nlogdetcov
 
             if obstacles_pt is None:
                 obstacles_pt = (self.sensor_r, np.pi)
@@ -219,4 +208,7 @@ class maTrackingEnv2(maTrackingBase):
                     obs_dict[agent_id].extend([r,alpha])
             full_state[agent_id] = {'obs':np.asarray(obs_dict[agent_id]), 
                                     'state':np.concatenate((obs_dict[agent_id],global_state))}
+        # Get all rewards after all agents and targets move (t -> t+1)
+        reward, done, mean_nlogdetcov = self.get_reward(obstacles_pt, observed, self.is_training)
+        reward_dict['__all__'], done_dict['__all__'], info_dict['__all__'] = reward, done, mean_nlogdetcov
         return full_state, reward_dict, done_dict, info_dict

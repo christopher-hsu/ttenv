@@ -103,8 +103,7 @@ class maTrackingBase(MultiAgentEnv):    #gym.Env for gym style env
         return obs_noise_cov
 
     def get_reward(self, obstacles_pt, observed, is_training=True):
-        return reward_fun(self.num_agents, self.belief_targets, obstacles_pt,
-                            observed, is_training)
+        return reward_fun(self.belief_targets, is_training)
 
     def gen_rand_pose(self, o_xy, c_theta, min_lin_dist, max_lin_dist, min_ang_dist, max_ang_dist):
         """Genertes random position and yaw.
@@ -224,8 +223,7 @@ def reward_fun_0(num_agents, belief_targets, obstacles_pt, observed, is_training
     done = False
     return reward, done, test_reward
 
-def reward_fun(num_agents, belief_targets, obstacles_pt, observed, is_training=True,
-    c_mean=0.1):
+def reward_fun(belief_targets, is_training=True, c_mean=0.1):
 
     detcov = [LA.det(b_target.cov) for b_target in belief_targets]
     r_detcov_mean = - np.mean(np.log(detcov))
