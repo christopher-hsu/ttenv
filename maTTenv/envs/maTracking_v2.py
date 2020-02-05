@@ -31,8 +31,17 @@ maTargetTrackingEnv2 : Agents locations included in observation state
     Agent : SE2 model, [x,y,theta]
     Target : Double Integrator model, [x,y,xdot,ydot]
     Belief Target : KF, Double Integrator model
+    global state: [d, alpha] * (nb_targets+nb_agents) in ref to origin
 
-global state: [d, alpha] * (nb_targets+nb_agents) in ref to origin
+>>>print(full_state)
+{
+    'agent-0':
+    {
+            'obs':[obs state]
+            'state':[global state]
+    },
+    'agent-1':{}
+}
 """
 
 class maTrackingEnv2(maTrackingBase):
@@ -160,7 +169,6 @@ class maTrackingEnv2(maTrackingBase):
             self.targets[n].update() 
             locations.append(self.targets[n].state[:2])
         # Agents move (t -> t+1) and observe the targets
-        tot_observed = []
         for ii, agent_id in enumerate(action_dict):
             obs_dict[self.agents[ii].agent_id] = []
             reward_dict[self.agents[ii].agent_id] = []

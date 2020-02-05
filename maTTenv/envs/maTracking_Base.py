@@ -7,12 +7,14 @@ from gym import spaces, logger
 from maTTenv.maps import map_utils
 import maTTenv.utils as util 
 from maTTenv.metadata import METADATA
+# rllib style env
+from maTTenv.rllib_modules.multi_agent_env import MultiAgentEnv
 
 
-class maTrackingBase(gym.Env):
+class maTrackingBase(MultiAgentEnv):    #gym.Env for gym style env
     def __init__(self, num_agents=2, num_targets=1, map_name='empty',
                         is_training=True, known_noise=True, **kwargs):
-        self.seed()
+        # self.seed()   #used with gym
         self.id = 'maTracking-base'
         self.action_space = spaces.Discrete(len(METADATA['action_v']) * \
                                                 len(METADATA['action_w']))
@@ -83,7 +85,6 @@ class maTrackingBase(gym.Env):
         raise NotImplementedError
 
     def observation(self, target, agent):
-        # r, alpha, _ = util.relative_measure(target.state, agent.state) # True Value 
         r, alpha = util.relative_distance_polar(target.state[:2],
                                             xy_base=agent.state[:2], 
                                             theta_base=agent.state[2])    
@@ -101,29 +102,9 @@ class maTrackingBase(gym.Env):
                                 [0.0, self.sensor_b_sd * self.sensor_b_sd]])
         return obs_noise_cov
 
-    def get_reward(self, obstacles_pt, observed, tot_observed, is_training=True):
-        if obstacles_pt is None:
-            penalty = 0.0
-        else:
-            penalty = 1./max(1.0, obstacles_pt[0]**2)/self.num_agents
-
-        if sum(observed) == 0:
-            reward = - penalty - 1
-        else:
-            detcov = [LA.det(b_target.cov) for b_target in self.belief_targets]
-            reward = - 0.1 * np.log(np.mean(detcov) + np.std(detcov)) - penalty
-            # logdetcov = [-np.log(LA.det(b_target.cov)) for b_target in self.belief_targets]
-            # reward = (np.mean(logdetcov)+np.std(logdetcov))/self.num_agents
-            reward = max(0.0, reward) + np.mean(observed)
-            # reward = reward + np.mean(tot_observed)
-        test_reward = None
-
-        if not(is_training):
-            logdetcov = [np.log(LA.det(b_target.cov)) for b_target in self.belief_targets]              
-            test_reward = -np.mean(logdetcov)
-
-        done = False
-        return reward, done, test_reward
+    def get_reward(self, obstacles_pt, observed, is_training=True):
+        return reward_fun(self.num_agents, self.belief_targets, obstacles_pt,
+                            observed, is_training)
 
     def gen_rand_pose(self, o_xy, c_theta, min_lin_dist, max_lin_dist, min_ang_dist, max_ang_dist):
         """Genertes random position and yaw.
@@ -220,3 +201,38 @@ class maTrackingBase(gym.Env):
                         break
                 init_pose['belief_targets'].append(init_pose_belief)
         return init_pose
+
+def reward_fun_0(num_agents, belief_targets, obstacles_pt, observed, is_training=True,
+    c_mean=0.1):
+    if obstacles_pt is None:
+        penalty = 0.0
+    else:
+        penalty = 1./max(1.0, obstacles_pt[0]**2)/num_agents
+
+    if sum(observed) == 0:
+        reward = - penalty - 1
+    else:
+        detcov = [LA.det(b_target.cov) for b_target in belief_targets]
+        reward = - 0.1 * np.log(np.mean(detcov) + np.std(detcov)) - penalty
+        reward = max(0.0, reward) + np.mean(observed)
+    test_reward = None
+
+    if not(is_training):
+        logdetcov = [np.log(LA.det(b_target.cov)) for b_target in belief_targets]              
+        test_reward = -np.mean(logdetcov)
+
+    done = False
+    return reward, done, test_reward
+
+def reward_fun(num_agents, belief_targets, obstacles_pt, observed, is_training=True,
+    c_mean=0.1):
+
+    detcov = [LA.det(b_target.cov) for b_target in belief_targets]
+    r_detcov_mean = - np.mean(np.log(detcov))
+    reward = c_mean * r_detcov_mean
+
+    mean_nlogdetcov = None
+    if not(is_training):
+        logdetcov = [np.log(LA.det(b_target.cov)) for b_target in belief_targets]
+        mean_nlogdetcov = -np.mean(logdetcov)
+    return reward, False, mean_nlogdetcov
