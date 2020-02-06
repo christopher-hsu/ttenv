@@ -98,7 +98,7 @@ class maTrackingEnv1(maTrackingBase):
         init_pose = self.get_init_pose(**kwargs)
         # Initialize agents
         for ii in range(self.num_agents):
-            self.agents[ii].reset(init_pose['agent'][ii])
+            self.agents[ii].reset(init_pose['agents'][ii])
             obs_dict[self.agents[ii].agent_id] = []
         # Initialize targets and beliefs
         for jj in range(self.num_targets):

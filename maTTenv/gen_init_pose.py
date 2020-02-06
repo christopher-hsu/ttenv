@@ -12,7 +12,6 @@ the reset function. For example,
 """
 import numpy as np
 import envs
-# import ttenv.maTTenv
 import argparse
 import pickle
 import os, time
@@ -30,10 +29,11 @@ args = parser.parse_args()
 
 def main():
     env = envs.make(args.env,
-                    # 'ma_target_tracking',
+                    'ma_target_tracking',
                     render=bool(args.render),
                     directory=args.log_dir,
                     map_name=args.map,
+                    num_agents=args.nb_agents,
                     num_targets=args.nb_targets,
                     is_training=False,
                     )
