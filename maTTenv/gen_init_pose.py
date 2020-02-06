@@ -17,9 +17,9 @@ import pickle
 import os, time
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--env', help='environment ID', default='maTracking-v1')
+parser.add_argument('--env', help='environment ID', default='maTracking-v2')
 parser.add_argument('--render', type=int, default=1)
-parser.add_argument('--map', type=str, default="obstacles02")
+parser.add_argument('--map', type=str, default="emptyMed")
 parser.add_argument('--nb_agents', type=int, default=2)
 parser.add_argument('--nb_targets', type=int, default=2)
 parser.add_argument('--nb_init_pose', type=int, default=10)
