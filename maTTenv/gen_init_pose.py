@@ -12,15 +12,17 @@ the reset function. For example,
 """
 import numpy as np
 import envs
+# import ttenv.maTTenv
 import argparse
 import pickle
 import os, time
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--env', help='environment ID', default='TargetTracking-v1')
+parser.add_argument('--env', help='environment ID', default='maTracking-v1')
 parser.add_argument('--render', type=int, default=1)
 parser.add_argument('--map', type=str, default="obstacles02")
-parser.add_argument('--nb_targets', type=int, default=1)
+parser.add_argument('--nb_agents', type=int, default=2)
+parser.add_argument('--nb_targets', type=int, default=2)
 parser.add_argument('--nb_init_pose', type=int, default=10)
 parser.add_argument('--log_dir', type=str, default='.')
 
@@ -28,7 +30,7 @@ args = parser.parse_args()
 
 def main():
     env = envs.make(args.env,
-                    'target_tracking',
+                    # 'ma_target_tracking',
                     render=bool(args.render),
                     directory=args.log_dir,
                     map_name=args.map,
@@ -45,7 +47,7 @@ def main():
             env.render()
         notes = input("%d, Pass? y/n"%len(init_pose))
         if notes == "y":
-            init_pose.append({'agent':timelimit_env.env.agent.state,
+            init_pose.append({'agents':[timelimit_env.env.agents[i].state for i in range(args.nb_agents)],
                             'targets':[timelimit_env.env.targets[i].state for i in range(args.nb_targets)],
                             'belief_targets':[timelimit_env.env.belief_targets[i].state for i in range(args.nb_targets)]})
 

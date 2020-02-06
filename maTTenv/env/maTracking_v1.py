@@ -6,41 +6,37 @@ from maTTenv.maps import map_utils
 import maTTenv.utils as util 
 from maTTenv.agent_models import *
 from maTTenv.belief_tracker import KFbelief
-from maTTenv.metadata import METADATA#_v1 as METADATA
-from maTTenv.envs.maTracking_Base import maTrackingBase
+from maTTenv.metadata import METADATA #_v1 as METADATA
+from maTTenv.env.maTracking_Base import maTrackingBase
 
 """
 Target Tracking Environments for Reinforcement Learning.
 [Variables]
 
-d: radial coordinate of a belief target or agent in the learner frame
-alpha : angular coordinate of a belief target or agent in the learner frame
-ddot : radial velocity of a belief target or agent in the learner frame
-alphadot : angular velocity of a belief target or agent in the learner frame
+d: radial coordinate of a belief target in the learner frame
+alpha : angular coordinate of a belief target in the learner frame
+ddot : radial velocity of a belief target in the learner frame
+alphadot : angular velocity of a belief target in the learner frame
 Sigma : Covariance of a belief target
 o_d : linear distance to the closet obstacle point
 o_alpha : angular distance to the closet obstacle point
 
 [Environment Description]
 
-maTargetTrackingEnv2 : Agents locations included in observation state
-    Double Integrator Target model with KF belief tracker
-    obs state:  [d, alpha, ddot, alphadot, logdet(Sigma), observed] * nb_targets,
-                [o_d, o_alpha],
-                [d, alpha] * nb_agents-1
-    Agent : SE2 model, [x,y,theta]
+maTargetTrackingEnv1 : Double Integrator Target model with KF belief tracker
+    obs state: [d, alpha, ddot, alphadot, logdet(Sigma)] * nb_targets, [o_d, o_alpha]
     Target : Double Integrator model, [x,y,xdot,ydot]
     Belief Target : KF, Double Integrator model
 """
 
-class maTrackingEnv2(maTrackingBase):
+class maTrackingEnv1(maTrackingBase):
 
     def __init__(self, num_agents=2, num_targets=2, map_name='empty', 
                         is_training=True, known_noise=True, **kwargs):
-        super().__init__(num_agents=num_agents, num_targets=num_targets, 
+        super().__init__(num_agents=num_agents, num_targets=num_targets,
                         map_name=map_name, is_training=is_training)
 
-        self.id = 'maTracking-v2'
+        self.id = 'maTracking-v1'
         self.agent_dim = 3
         self.target_dim = 4
         self.target_init_vel = METADATA['target_init_vel']*np.ones((2,))
@@ -50,12 +46,8 @@ class maTrackingEnv2(maTrackingBase):
         self.limit['target'] = [np.concatenate((self.MAP.mapmin,[-METADATA['target_vel_limit'], -METADATA['target_vel_limit']])),
                                 np.concatenate((self.MAP.mapmax, [METADATA['target_vel_limit'], METADATA['target_vel_limit']]))]
         rel_vel_limit = METADATA['target_vel_limit'] + METADATA['action_v'][0] # Maximum relative speed
-        self.limit['state'] = [np.concatenate(([0.0, -np.pi, -rel_vel_limit, -10*np.pi, -50.0, 0.0]*self.num_targets, 
-                                np.concatenate(([0.0, -np.pi ],
-                                [0.0, -np.pi]*(self.num_agents-1))))),
-                                np.concatenate(([600.0, np.pi, rel_vel_limit, 10*np.pi,  50.0, 2.0]*self.num_targets, 
-                                np.concatenate(([self.sensor_r, np.pi],
-                                [600.0, np.pi]*(self.num_agents-1)))))]
+        self.limit['state'] = [np.concatenate(([0.0, -np.pi, -rel_vel_limit, -10*np.pi, -50.0, 0.0]*self.num_targets, [0.0, -np.pi ])),
+                               np.concatenate(([600.0, np.pi, rel_vel_limit, 10*np.pi,  50.0, 2.0]*self.num_targets, [self.sensor_r, np.pi]))]
         self.observation_space = spaces.Box(self.limit['state'][0], self.limit['state'][1], dtype=np.float32)
         self.targetA = np.concatenate((np.concatenate((np.eye(2), self.sampling_period*np.eye(2)), axis=1), 
                                         [[0,0,1,0],[0,0,0,1]]))
@@ -100,7 +92,7 @@ class maTrackingEnv2(maTrackingBase):
     def reset(self,**kwargs):
         """
         Agents are given random positions in the map, targets are given random positions near a random agent.
-        Return a full state dict with agent ids (keys) that refer to their observation and global state
+        Return an observation state dict with agent ids (keys) that refer to their observation
         """
         obs_dict = {}
         init_pose = self.get_init_pose(**kwargs)
@@ -114,22 +106,15 @@ class maTrackingEnv2(maTrackingBase):
                         init_state=np.concatenate((init_pose['belief_targets'][jj][:2], np.zeros(2))),
                         init_cov=self.target_init_cov)
             self.targets[jj].reset(np.concatenate((init_pose['targets'][jj][:2], self.target_init_vel)))
-            # For each agent calculate belief of all targets
+            #For each agent calculate belief of all targets
             for kk in range(self.num_agents):
                 r, alpha = util.relative_distance_polar(self.belief_targets[jj].state[:2],
                                             xy_base=self.agents[kk].state[:2], 
                                             theta_base=self.agents[kk].state[2])
                 logdetcov = np.log(LA.det(self.belief_targets[jj].cov))
                 obs_dict[self.agents[kk].agent_id].extend([r, alpha, 0.0, 0.0, logdetcov, 0.0])
-        # Relative location from agent_id to all other agents
-        for m, agent_id in enumerate(obs_dict):
+        for agent_id in obs_dict:
             obs_dict[agent_id].extend([self.sensor_r, np.pi])
-            for p, ids in enumerate(obs_dict):
-                if agent_id != ids:
-                    r, alpha = util.relative_distance_polar(np.array(self.agents[p].state[:2]),
-                                            xy_base=self.agents[m].state[:2], 
-                                            theta_base=self.agents[m].state[2])
-                    obs_dict[agent_id].extend([r,alpha])
         return obs_dict
 
     def step(self, action_dict):
@@ -176,14 +161,6 @@ class maTrackingEnv2(maTrackingBase):
                                         np.log(LA.det(self.belief_targets[kk].cov)), 
                                         float(observed[kk])])
             obs_dict[agent_id].extend([obstacles_pt[0], obstacles_pt[1]])
-        # Relative location from agent_id to all other agents
-        for m, agent_id in enumerate(obs_dict):
-            for p, ids in enumerate(obs_dict):
-                if agent_id != ids:
-                    r, alpha = util.relative_distance_polar(np.array(self.agents[p].state[:2]),
-                                            xy_base=self.agents[m].state[:2], 
-                                            theta_base=self.agents[m].state[2])
-                    obs_dict[agent_id].extend([r,alpha])
         # Get all rewards after all agents and targets move (t -> t+1)
         reward, done, mean_nlogdetcov = self.get_reward(obstacles_pt, observed, self.is_training)
         reward_dict['__all__'], done_dict['__all__'], info_dict['mean_nlogdetcov'] = reward, done, mean_nlogdetcov

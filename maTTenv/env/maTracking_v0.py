@@ -7,7 +7,7 @@ import maTTenv.utils as util
 from maTTenv.agent_models import *
 from maTTenv.belief_tracker import KFbelief
 from maTTenv.metadata import METADATA# as METADATA
-from maTTenv.envs.maTracking_Base import maTrackingBase
+from maTTenv.env.maTracking_Base import maTrackingBase
 
 """
 [Variables]
