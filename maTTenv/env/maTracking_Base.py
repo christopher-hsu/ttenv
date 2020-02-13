@@ -154,7 +154,7 @@ class maTrackingBase(gym.Env):    #MultiAgentEnv for rllib style env
                             lin_dist_range_target=(METADATA['init_distance_min'], METADATA['init_distance_max']),
                             ang_dist_range_target=(-np.pi, np.pi),
                             lin_dist_range_belief=(METADATA['init_belief_distance_min'], METADATA['init_belief_distance_max']),
-                            ang_dist_range_belief=(-np.pi, np.pi), #(-np.pi, np.pi),
+                            ang_dist_range_belief=(-np.pi, np.pi),
                             blocked=False,
                             **kwargs):
         is_agent_valid = False
