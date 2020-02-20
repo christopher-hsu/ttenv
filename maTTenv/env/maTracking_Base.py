@@ -221,7 +221,7 @@ def reward_fun_0(num_agents, belief_targets, obstacles_pt, observed, is_training
 def reward_fun(belief_targets, is_training=True, c_mean=0.1):
 
     detcov = [LA.det(b_target.cov) for b_target in belief_targets]
-    r_detcov_mean = - np.mean(np.log(detcov))
+    r_detcov_mean = - np.mean(np.log(detcov))# - np.std(np.log(detcov))
     reward = c_mean * r_detcov_mean
 
     mean_nlogdetcov = None

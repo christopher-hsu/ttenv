@@ -25,7 +25,7 @@ METADATA_v0={   # Extremely random inits for targets and beliefs
 METADATA_v1={   # Beliefs are initialized near target
         'version' : 1,
         'sensor_r': 10.0,
-        'fov' : 150,
+        'fov' : 90,
         'sensor_r_sd': 0.2, # sensor range noise.
         'sensor_b_sd': 0.01, # sensor bearing noise.
         'target_init_cov': 30.0, # initial target diagonal Covariance.
