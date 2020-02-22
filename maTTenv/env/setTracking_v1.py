@@ -112,9 +112,8 @@ class setTrackingEnv1(maTrackingBase):
                                             xy_base=self.agents[kk].state[:2], 
                                             theta_base=self.agents[kk].state[2])
                 logdetcov = np.log(LA.det(self.belief_targets[jj].cov))
-                obs_dict[self.agents[kk].agent_id].extend([r, alpha, 0.0, 0.0, logdetcov, 0.0])
-        for agent_id in obs_dict:
-            obs_dict[agent_id].extend([self.sensor_r, np.pi])
+                obs_dict[self.agents[kk].agent_id].append([r, alpha, 0.0, 0.0, logdetcov, 
+                                                           0.0, self.sensor_r, np.pi])
         return obs_dict
 
     def step(self, action_dict):
@@ -157,10 +156,9 @@ class setTrackingEnv1(maTrackingBase):
                                         self.belief_targets[kk].state[2:],
                                         self.agents[ii].state[:2], self.agents[ii].state[-1],
                                         action_vw[0], action_vw[1])
-                obs_dict[agent_id].extend([r_b, alpha_b, r_dot_b, alpha_dot_b,
+                obs_dict[agent_id].append([r_b, alpha_b, r_dot_b, alpha_dot_b,
                                         np.log(LA.det(self.belief_targets[kk].cov)), 
-                                        float(observed[kk])])
-            obs_dict[agent_id].extend([obstacles_pt[0], obstacles_pt[1]])
+                                        float(observed[kk]), obstacles_pt[0], obstacles_pt[1]])
         # Get all rewards after all agents and targets move (t -> t+1)
         reward, done, mean_nlogdetcov = self.get_reward(obstacles_pt, observed, self.is_training)
         reward_dict['__all__'], done_dict['__all__'], info_dict['mean_nlogdetcov'] = reward, done, mean_nlogdetcov
