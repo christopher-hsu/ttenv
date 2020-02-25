@@ -46,8 +46,8 @@ class setTrackingEnv1(maTrackingBase):
         self.limit['target'] = [np.concatenate((self.MAP.mapmin,[-METADATA['target_vel_limit'], -METADATA['target_vel_limit']])),
                                 np.concatenate((self.MAP.mapmax, [METADATA['target_vel_limit'], METADATA['target_vel_limit']]))]
         rel_vel_limit = METADATA['target_vel_limit'] + METADATA['action_v'][0] # Maximum relative speed
-        self.limit['state'] = [np.concatenate(([0.0, -np.pi, -rel_vel_limit, -10*np.pi, -50.0, 0.0]*self.num_targets, [0.0, -np.pi ])),
-                               np.concatenate(([600.0, np.pi, rel_vel_limit, 10*np.pi,  50.0, 2.0]*self.num_targets, [self.sensor_r, np.pi]))]
+        self.limit['state'] = [np.concatenate(([0.0, -np.pi, -rel_vel_limit, -10*np.pi, -50.0, 0.0], [0.0, -np.pi ])),
+                               np.concatenate(([600.0, np.pi, rel_vel_limit, 10*np.pi,  50.0, 2.0], [self.sensor_r, np.pi]))]
         self.observation_space = spaces.Box(self.limit['state'][0], self.limit['state'][1], dtype=np.float32)
         self.targetA = np.concatenate((np.concatenate((np.eye(2), self.sampling_period*np.eye(2)), axis=1), 
                                         [[0,0,1,0],[0,0,0,1]]))
@@ -114,6 +114,8 @@ class setTrackingEnv1(maTrackingBase):
                 logdetcov = np.log(LA.det(self.belief_targets[jj].cov))
                 obs_dict[self.agents[kk].agent_id].append([r, alpha, 0.0, 0.0, logdetcov, 
                                                            0.0, self.sensor_r, np.pi])
+        for agent_id in obs_dict:
+            obs_dict[agent_id] = np.asarray(obs_dict[agent_id])
         return obs_dict
 
     def step(self, action_dict):
@@ -159,6 +161,7 @@ class setTrackingEnv1(maTrackingBase):
                 obs_dict[agent_id].append([r_b, alpha_b, r_dot_b, alpha_dot_b,
                                         np.log(LA.det(self.belief_targets[kk].cov)), 
                                         float(observed[kk]), obstacles_pt[0], obstacles_pt[1]])
+            obs_dict[agent_id] = np.asarray(obs_dict[agent_id])
         # Get all rewards after all agents and targets move (t -> t+1)
         reward, done, mean_nlogdetcov = self.get_reward(obstacles_pt, observed, self.is_training)
         reward_dict['__all__'], done_dict['__all__'], info_dict['mean_nlogdetcov'] = reward, done, mean_nlogdetcov
