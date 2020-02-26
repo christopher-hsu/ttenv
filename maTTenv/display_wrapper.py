@@ -44,13 +44,15 @@ class Display2D(Wrapper):
         if not hasattr(self, 'traj'):
             raise ValueError('Must do a env.reset() first before calling env.render()')
 
-        num_agents = len(self.traj)
+        # num_agents = len(self.traj)
+        num_agents = self.env_core.num_agents
         if type(self.env_core.agents) == list:
             agent_pos = [self.env_core.agents[i].state for i in range(num_agents)]
         else:
             agent_pos = self.env_core.agents.state
 
-        num_targets = len(self.traj_y)
+        # num_targets = len(self.traj_y)
+        num_targets = self.env_core.nb_targets
         if type(self.env_core.targets) == list:
             target_true_pos = [self.env_core.targets[i].state[:2] for i in range(num_targets)]
             target_b_state = [self.env_core.belief_targets[i].state for i in range(num_targets)] # state[3:5]

@@ -29,7 +29,10 @@ def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
 
     elif env_name == 'setTracking-v1':
         from maTTenv.env.setTracking_v1 import setTrackingEnv1
-        env0 = setTrackingEnv1(num_agents=num_agents, **kwargs)
+        env0 = setTrackingEnv1(num_agents=num_agents, num_targets=num_targets, **kwargs)
+    elif env_name == 'setTracking-v2':
+        from maTTenv.env.setTracking_v2 import setTrackingEnv2
+        env0 = setTrackingEnv2(num_agents=num_agents, num_targets=num_targets, **kwargs)
 
     # elif env_name == 'TargetTracking-info1':
     #     from ttenv.infoplanner_python.target_tracking_infoplanner import TargetTrackingInfoPlanner1

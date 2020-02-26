@@ -28,6 +28,7 @@ class maTrackingBase(gym.Env):    #MultiAgentEnv for rllib style env
         self.target_dim = 2
         self.num_agents = num_agents
         self.num_targets = num_targets
+        self.nb_targets = num_targets
         self.viewer = None
         self.is_training = is_training
 
