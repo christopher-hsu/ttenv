@@ -106,7 +106,6 @@ class setTrackingEnv2(maTrackingBase):
         Return an observation state dict with agent ids (keys) that refer to their observation
         """
         self.nb_targets = np.random.randint(1, self.num_targets+1)
-        print("nb_targets",self.nb_targets)
         obs_dict = {}
         init_pose = self.get_init_pose(**kwargs)
         # Initialize agents
