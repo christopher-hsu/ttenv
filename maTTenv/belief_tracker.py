@@ -37,6 +37,7 @@ class KFbelief(object):
         self.W = W if W is not None else np.zeros((self.dim, self.dim))
         self.obs_noise_func = obs_noise_func
         self.collision_func = collision_func
+        self.cov = np.eye(self.dim)
 
     def reset(self, init_state, init_cov):
         self.state = init_state
