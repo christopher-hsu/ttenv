@@ -105,20 +105,21 @@ class setTrackingEnv2(maTrackingBase):
         Agents are given random positions in the map, targets are given random positions near a random agent.
         Return an observation state dict with agent ids (keys) that refer to their observation
         """
-        self.nb_targets = np.random.randint(1, self.num_targets+1)
+        self.nb_targets = np.random.random_integers(1, self.num_targets)
         obs_dict = {}
         init_pose = self.get_init_pose(**kwargs)
         # Initialize agents
         for ii in range(self.num_agents):
             self.agents[ii].reset(init_pose['agents'][ii])
             obs_dict[self.agents[ii].agent_id] = []
-        # Initialize targets and beliefs
-        for jj in range(self.nb_targets):
-            self.belief_targets[jj].reset(
-                        init_state=np.concatenate((init_pose['belief_targets'][jj][:2], np.zeros(2))),
+        # Initialize all targets and beliefs
+        for nn in range(self.num_targets):
+            self.belief_targets[nn].reset(
+                        init_state=np.concatenate((init_pose['belief_targets'][nn][:2], np.zeros(2))),
                         init_cov=self.target_init_cov)
-            self.targets[jj].reset(np.concatenate((init_pose['targets'][jj][:2], self.target_init_vel)))
-            #For each agent calculate belief of all targets
+            self.targets[nn].reset(np.concatenate((init_pose['targets'][nn][:2], self.target_init_vel)))
+        # For each agent calculate belief of targets assigned
+        for jj in range(self.nb_targets):
             for kk in range(self.num_agents):
                 r, alpha = util.relative_distance_polar(self.belief_targets[jj].state[:2],
                                             xy_base=self.agents[kk].state[:2], 
@@ -149,7 +150,8 @@ class setTrackingEnv2(maTrackingBase):
             _ = self.agents[ii].update(action_vw, [t.state[:2] for t in self.targets[:self.nb_targets-1]])
             
             observed = []
-            for jj in range(self.nb_targets):
+            # Update beliefs of all targets
+            for jj in range(self.num_targets):
                 # Observe
                 obs = self.observation(self.targets[jj], self.agents[ii])
                 observed.append(obs[0])
@@ -161,6 +163,7 @@ class setTrackingEnv2(maTrackingBase):
 
             if obstacles_pt is None:
                 obstacles_pt = (self.sensor_r, np.pi)
+            # Calculate beliefs on only assigned targets
             for kk in range(self.nb_targets):
                 r_b, alpha_b = util.relative_distance_polar(self.belief_targets[kk].state[:2],
                                         xy_base=self.agents[ii].state[:2], 
@@ -180,13 +183,12 @@ class setTrackingEnv2(maTrackingBase):
         return obs_dict, reward_dict, done_dict, info_dict
 
 def reward_fun(nb_targets, belief_targets, is_training=True, c_mean=0.1):
-
-    detcov = [LA.det(b_target.cov) for b_target in belief_targets[:nb_targets-1]]
+    detcov = [LA.det(b_target.cov) for b_target in belief_targets[:nb_targets]]
     r_detcov_mean = - np.mean(np.log(detcov))# - np.std(np.log(detcov))
     reward = c_mean * r_detcov_mean
 
     mean_nlogdetcov = None
     if not(is_training):
-        logdetcov = [np.log(LA.det(b_target.cov)) for b_target in belief_targets[:nb_targets-1]]
+        logdetcov = [np.log(LA.det(b_target.cov)) for b_target in belief_targets[:nb_targets]]
         mean_nlogdetcov = -np.mean(logdetcov)
     return reward, False, mean_nlogdetcov
