@@ -103,7 +103,10 @@ class maTrackingBase(gym.Env):    #MultiAgentEnv for rllib style env, seeds are 
         z = None
         if observed:
             z = np.array([r, alpha])
-            z += np.random.multivariate_normal(np.zeros(2,), self.observation_noise(z))
+            # z += np.random.multivariate_normal(np.zeros(2,), self.observation_noise(z))
+            z += self.np_random.multivariate_normal(np.zeros(2,), self.observation_noise(z))
+        '''For some reason, self.np_random is needed only here instead of np.random in order for the 
+        RNG seed to work, if used in the gen_rand_pose functions RNG seed will NOT work '''
         return observed, z
 
     def observation_noise(self, z):
