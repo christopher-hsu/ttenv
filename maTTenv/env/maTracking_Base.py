@@ -3,15 +3,15 @@ import numpy as np
 from numpy import linalg as LA
 import gym
 from gym import spaces, logger
-
+from gym.utils import seeding
 from maTTenv.maps import map_utils
 import maTTenv.utils as util 
 from maTTenv.metadata import METADATA
 # rllib style env
-from maTTenv.rllib_modules.multi_agent_env import MultiAgentEnv
+# from maTTenv.rllib_modules.multi_agent_env import MultiAgentEnv
 
 
-class maTrackingBase(gym.Env):    #MultiAgentEnv for rllib style env
+class maTrackingBase(gym.Env):    #MultiAgentEnv for rllib style env, seeds are not supported
     def __init__(self, num_agents=2, num_targets=1, map_name='empty',
                         is_training=True, known_noise=True, **kwargs):
         self.seed()   #used with gym
@@ -65,6 +65,13 @@ class maTrackingBase(gym.Env):    #MultiAgentEnv for rllib style env
         self.metadata = {'render.modes': []}
         self.reward_range = (-float('inf'), float('inf'))
         self.spec = None
+
+    def seed(self, seed=None):
+        '''EXTREMELY IMPORTANT for reproducability in env randomness
+        RNG is set and every call of the function will produce the same results
+        '''
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
 
     def setup_agents(self):
         """Construct all the agents for the environment"""
