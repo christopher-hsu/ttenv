@@ -33,6 +33,9 @@ def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
     elif env_name == 'setTracking-v2':
         from maTTenv.env.setTracking_v2 import setTrackingEnv2
         env0 = setTrackingEnv2(num_agents=num_agents, num_targets=num_targets, **kwargs)
+    elif env_name == 'setTracking-v3':
+        from maTTenv.env.setTracking_v3 import setTrackingEnv3
+        env0 = setTrackingEnv3(num_agents=num_agents, num_targets=num_targets, **kwargs)
 
     # elif env_name == 'TargetTracking-info1':
     #     from ttenv.infoplanner_python.target_tracking_infoplanner import TargetTrackingInfoPlanner1

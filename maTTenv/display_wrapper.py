@@ -45,7 +45,7 @@ class Display2D(Wrapper):
             raise ValueError('Must do a env.reset() first before calling env.render()')
 
         # num_agents = len(self.traj)
-        num_agents = self.env_core.num_agents
+        num_agents = self.env_core.nb_agents
         if type(self.env_core.agents) == list:
             agent_pos = [self.env_core.agents[i].state for i in range(num_agents)]
         else:
