@@ -105,7 +105,10 @@ class setTrackingEnv2(maTrackingBase):
         Agents are given random positions in the map, targets are given random positions near a random agent.
         Return an observation state dict with agent ids (keys) that refer to their observation
         """
-        self.nb_targets = np.random.random_integers(1, self.num_targets)
+        try: 
+            self.nb_targets = kwargs['nb_targets']
+        except:
+            self.nb_targets = np.random.random_integers(1, self.num_targets)
         obs_dict = {}
         init_pose = self.get_init_pose(**kwargs)
         # Initialize agents

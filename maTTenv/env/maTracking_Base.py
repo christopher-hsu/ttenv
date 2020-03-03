@@ -156,11 +156,15 @@ class maTrackingBase(gym.Env):    #MultiAgentEnv for rllib style env, seeds are 
                             target. -pi <= x <= pi
         blocked : True if there is an obstacle between a target and the agent.
         """
-        if init_pose_list:
-            self.reset_num += 1
-            return init_pose_list[self.reset_num-1]
-        else:
+        try: 
+            kwargs['num_targets']
             return self.get_init_pose_random(**kwargs)
+        except:
+            if init_pose_list:
+                self.reset_num += 1
+                return init_pose_list[self.reset_num-1]
+            else:
+                return self.get_init_pose_random(**kwargs)
 
     def get_init_pose_random(self,
                             lin_dist_range_target=(METADATA['init_distance_min'], METADATA['init_distance_max']),
