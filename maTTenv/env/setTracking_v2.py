@@ -41,7 +41,7 @@ class setTrackingEnv2(maTrackingBase):
                         map_name=map_name, is_training=is_training)
 
         self.id = 'setTracking-v2'
-        self.nb_targets = 1 #only for init, will change with reset()
+        self.nb_targets = num_targets #only for init, will change with reset()
         self.agent_dim = 3
         self.target_dim = 4
         self.target_init_vel = METADATA['target_init_vel']*np.ones((2,))
