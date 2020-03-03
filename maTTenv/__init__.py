@@ -10,10 +10,10 @@ def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
         'classic_mdp','target_tracking']
     """
     if T_steps is None:
-        if num_targets > 1:
-            T_steps = 200
-        else:
-            T_steps = 150
+        # if num_targets > 1:
+        T_steps = 200
+        # else:
+        #     T_steps = 150
     if env_name == 'maTracking-v0':
         from maTTenv.env.maTracking_v0 import maTrackingEnv0
         env0 = maTrackingEnv0(num_agents=num_agents, num_targets=num_targets, **kwargs)
