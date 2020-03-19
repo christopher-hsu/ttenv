@@ -26,6 +26,9 @@ def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
     elif env_name == 'maTracking-v3':
         from maTTenv.env.maTracking_v3 import maTrackingEnv3
         env0 = maTrackingEnv3(num_agents=num_agents, num_targets=num_targets, **kwargs)
+    elif env_name == 'maTracking-v4':
+        from maTTenv.env.maTracking_v4 import maTrackingEnv4
+        env0 = maTrackingEnv4(num_agents=num_agents, num_targets=num_targets, **kwargs)
 
     elif env_name == 'setTracking-v1':
         from maTTenv.env.setTracking_v1 import setTrackingEnv1
