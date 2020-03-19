@@ -14,7 +14,7 @@ parser.add_argument('--map', type=str, default="emptySmall")
 
 args = parser.parse_args()
 
-@profile
+# @profile
 def main():
     env = maTTenv.make(args.env,
                     render=args.render,
