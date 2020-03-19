@@ -167,10 +167,10 @@ class setTrackingEnv3(maTrackingBase):
                 if obs[0]: # if observed, update the target belief.
                     self.belief_targets[jj].update(obs[1], self.agents[ii].state)
 
-            obstacles_pt = map_utils.get_closest_obstacle(self.MAP, self.agents[ii].state)
+            # obstacles_pt = map_utils.get_closest_obstacle(self.MAP, self.agents[ii].state)
 
-            if obstacles_pt is None:
-                obstacles_pt = (self.sensor_r, np.pi)
+            # if obstacles_pt is None:
+            obstacles_pt = (self.sensor_r, np.pi)
             # Calculate beliefs on only assigned targets
             for kk in range(self.nb_targets):
                 r_b, alpha_b = util.relative_distance_polar(self.belief_targets[kk].state[:2],

@@ -14,6 +14,7 @@ parser.add_argument('--map', type=str, default="emptySmall")
 
 args = parser.parse_args()
 
+@profile
 def main():
     env = maTTenv.make(args.env,
                     render=args.render,
@@ -46,6 +47,11 @@ def main():
 if __name__ == "__main__":
     main()
     """
+    To use line_profiler
+    add @profile before a function to profile
+    kernprof -l run_ma_example.py --env setTracking-v3 --nb_agents 4 --nb_targets 4 --render 0
+    python -m line_profiler run_ma_example.py.lprof 
+
     Examples:
         >>> env = MyMultiAgentEnv()
         >>> obs = env.reset()
