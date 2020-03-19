@@ -192,20 +192,20 @@ def get_closest_obstacle(map_obj, odom, ang_res=0.05):
     return closest_obstacle
 
 def is_collision(map_obj, pos):
-  if not(in_bound(map_obj, pos)):
-    return True
-  else:
-    if map_obj.map is not None:
-      n = np.ceil(map_obj.margin2wall/map_obj.mapres).astype(np.int16)
-      cell = np.minimum([map_obj.mapdim[0]-1,map_obj.mapdim[1]-1] , map_obj.se2_to_cell(pos))
-      for r_add in np.arange(-n[1],n[1],1):
-        for c_add in np.arange(-n[0],n[0],1):
-          x_c = np.clip(cell[0]+r_add, 0, map_obj.mapdim[0]-1).astype(np.int16)
-          y_c = np.clip(cell[1]+c_add,0,map_obj.mapdim[1]-1).astype(np.int16)
-          idx = x_c + map_obj.mapdim[0] * y_c
-          if map_obj.map_linear[idx] == 1:
-            return True
-  return False
+  return not(in_bound(map_obj, pos))
+    # return True
+  # else:
+  #   if map_obj.map is not None:
+  #     n = np.ceil(map_obj.margin2wall/map_obj.mapres).astype(np.int16)
+  #     cell = np.minimum([map_obj.mapdim[0]-1,map_obj.mapdim[1]-1] , map_obj.se2_to_cell(pos))
+  #     for r_add in np.arange(-n[1],n[1],1):
+  #       for c_add in np.arange(-n[0],n[0],1):
+  #         x_c = np.clip(cell[0]+r_add, 0, map_obj.mapdim[0]-1).astype(np.int16)
+  #         y_c = np.clip(cell[1]+c_add,0,map_obj.mapdim[1]-1).astype(np.int16)
+  #         idx = x_c + map_obj.mapdim[0] * y_c
+  #         if map_obj.map_linear[idx] == 1:
+  #           return True
+  # return False
 
 def in_bound(map_obj, pos):
   return not((pos[0] < map_obj.mapmin[0] + map_obj.margin2wall)
