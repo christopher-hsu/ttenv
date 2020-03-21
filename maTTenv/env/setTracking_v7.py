@@ -110,8 +110,10 @@ class setTrackingEnv7(maTrackingBase):
             self.nb_agents = kwargs['nb_agents']
             self.nb_targets = kwargs['nb_targets']
         except:
-            self.nb_agents = np.random.random_integers(1, self.num_agents)
-            self.nb_targets = np.random.random_integers(1, self.num_targets)
+            # self.nb_agents = np.random.random_integers(1, self.num_agents)
+            # self.nb_targets = np.random.random_integers(1, self.num_targets)
+            self.nb_agents = 4
+            self.nb_targets = 2
         obs_dict = {}
         init_pose = self.get_init_pose(**kwargs)
         # Initialize all agents
@@ -135,8 +137,19 @@ class setTrackingEnv7(maTrackingBase):
                 logdetcov = np.log(LA.det(self.belief_targets[jj].cov))
                 obs_dict[self.agents[kk].agent_id].append([r, alpha, 0.0, 0.0, logdetcov, 
                                                            0.0, self.sensor_r, np.pi])
+        # Greedily assign agents to closest target in order, all targets assigned if agents > targets
+        mask = np.ones(self.nb_targets,bool)
+        if self.nb_targets > self.nb_agents:
+            oracle=1
+        else:
+            oracle=0
         for agent_id in obs_dict:
             obs_dict[agent_id] = np.asarray(obs_dict[agent_id])
+            if np.sum(mask) != np.maximum(0,self.nb_targets-self.nb_agents+oracle):
+                idx = np.flatnonzero(mask)
+                close = idx[np.argmin(obs_dict[agent_id][:,0][mask])]
+                obs_dict[agent_id] = obs_dict[agent_id][close]
+                mask[close] = False
         return obs_dict
 
     def step(self, action_dict):
@@ -184,7 +197,19 @@ class setTrackingEnv7(maTrackingBase):
                 obs_dict[agent_id].append([r_b, alpha_b, r_dot_b, alpha_dot_b,
                                         np.log(LA.det(self.belief_targets[kk].cov)), 
                                         float(observed[kk]), obstacles_pt[0], obstacles_pt[1]])
+        # Greedily assign agents to closest target in order, all targets assigned if agents > targets
+        mask = np.ones(self.nb_targets,bool)
+        if self.nb_targets > self.nb_agents:
+            oracle=1
+        else:
+            oracle=0
+        for agent_id in obs_dict:
             obs_dict[agent_id] = np.asarray(obs_dict[agent_id])
+            if np.sum(mask) != np.maximum(0,self.nb_targets-self.nb_agents+oracle):
+                idx = np.flatnonzero(mask)
+                close = idx[np.argmin(obs_dict[agent_id][:,0][mask])]
+                obs_dict[agent_id] = obs_dict[agent_id][close]
+                mask[close] = False
         # Get all rewards after all agents and targets move (t -> t+1)
         reward, done, mean_nlogdetcov = self.get_reward(obstacles_pt, observed, self.is_training)
         reward_dict['__all__'], done_dict['__all__'], info_dict['mean_nlogdetcov'] = reward, done, mean_nlogdetcov
