@@ -192,7 +192,7 @@ def get_closest_obstacle(map_obj, odom, ang_res=0.05):
     return closest_obstacle
 
 def is_collision(map_obj, pos):
-  if not(in_bound(map_obj, pos))
+  if not(in_bound(map_obj, pos)):
     return True
   else:
     if map_obj.map is not None:
