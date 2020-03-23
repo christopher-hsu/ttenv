@@ -2,10 +2,10 @@ import numpy as np
 from numpy import linalg as LA
 import os
 
-from ttenv.maps import map_utils
-import ttenv.util as util
+from maTTenv.maps import map_utils
+import maTTenv.utils as util
 
-from ttenv.agent_models import Agent, AgentDoubleInt2D_Nonlinear
+from maTTenv.agent_models import Agent, AgentDoubleInt2D_Nonlinear
 from ttenv.metadata import METADATA
 from ttenv.target_tracking import TargetTrackingEnv1
 from ttenv.target_tracking import TargetTrackingBase

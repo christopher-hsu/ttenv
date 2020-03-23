@@ -132,20 +132,7 @@ def SE2DynamicsVel(x, dt, u=None):
     odom = SE2Dynamics(x[:3], dt, u)
     return np.concatenate((odom, u))
 
-# class Agent2DFixedPath(Agent):
-#     def __init__(self, dim, sampling_period, limit, collision_func, path, margin):
-#         Agent.__init__(self, dim, sampling_period, limit, collision_func, margin)
-#         self.path = path
 
-#     def update(self, margin_pos=None):
-#         # fixed policy for now
-#         self.t += 1
-#         self.state = np.concatenate((self.path[self.t][:2], self.path[self.t][-2:]))
-
-#     def reset(self, init_state):
-#         self.t = 0
-#         self.state = np.concatenate((self.path[self.t][:2], self.path[self.t][-2:]))
-#         
 class Agent2DFixedPath(Agent):
     def __init__(self, dim, sampling_period, limit, collision_func, path, margin=METADATA['margin']):
         Agent.__init__(self, dim, sampling_period, limit, collision_func, margin=margin)
@@ -170,3 +157,63 @@ class Agent2DFixedPath(Agent):
     def reset(self, init_state):
         self.t = 0
         self.state = np.concatenate((self.path[self.t][:2], self.path[self.t][-2:]))
+
+
+class AgentDoubleInt2D_Nonlinear(AgentDoubleInt2D):
+    def __init__(self, dim, sampling_period, limit, collision_func,
+                    margin=METADATA['margin'], A=None, W=None, obs_check_func=None):
+        AgentDoubleInt2D.__init__(self, dim, sampling_period, limit,
+            collision_func, margin=margin, A=A, W=W)
+        self.obs_check_func = obs_check_func
+
+    def update(self, margin_pos=None):
+        new_state = np.matmul(self.A, self.state[:self.dim])
+        if self.W is not None:
+            noise_sample = np.random.multivariate_normal(np.zeros(self.dim,), self.W)
+            new_state += noise_sample
+
+        is_col = 0
+        if self.collision_check(new_state[:2]):
+            new_state = self.collision_control()
+            is_col = 1
+
+        if self.obs_check_func is not None:
+            del_vx, del_vy = self.obstacle_detour_maneuver(
+                    r_margin=METADATA['target_speed_limit']*self.sampling_period*2)
+            new_state[2] += del_vx
+            new_state[3] += del_vy
+
+        self.state = new_state
+        self.range_check()
+        return is_col
+
+    def range_check(self):
+        """
+        Limit the position and the velocity.
+        self.limit[:][2] = self.limit[:][3] = speed limit. The velocity components
+        are clipped proportional to the original values.
+        """
+        self.state[:2] = np.clip(self.state[:2], self.limit[0][:2], self.limit[1][:2])
+        v_square = self.state[2:]**2
+        del_v = np.sum(v_square) - self.limit[1][2]**2
+        if del_v > 0.0:
+            self.state[2] = np.sign(self.state[2]) * np.sqrt(max(0.0,
+                v_square[0] - del_v * v_square[0] / (v_square[0] + v_square[1])))
+            self.state[3] = np.sign(self.state[3]) * np.sqrt(max(0.0,
+                v_square[1] - del_v * v_square[1] / (v_square[0] + v_square[1])))
+
+    def collision_control(self):
+        """
+        Assigns a new velocity deviating the agent with an angle (pi/2, pi) from
+        the closest obstacle point.
+        """
+        odom = [self.state[0], self.state[1], np.arctan2(self.state[3], self.state[2])]
+        obs_pos = self.obs_check_func(odom)
+        v = np.sqrt(np.sum(np.square(self.state[2:]))) + np.random.normal(0.0,1.0)
+        if obs_pos[1] >= 0:
+            th = obs_pos[1] - (1 + np.random.random()) * np.pi/2
+        else:
+            th = obs_pos[1] + (1 + np.random.random()) * np.pi/2
+
+        state = np.array([self.state[0], self.state[1], v * np.cos(th + odom[2]), v * np.sin(th + odom[2])])
+        return state
