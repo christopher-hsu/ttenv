@@ -3,7 +3,7 @@ import pickle
 import datetime, json, os, argparse, time
 
 import ttenv
-from ttenv.infoplanner_python.infoplanner import InfoPlanner
+from maTTenv.infoplanner_python.infoplanner import InfoPlanner
 
 from pub.test_util import *
 

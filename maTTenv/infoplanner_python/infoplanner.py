@@ -1,5 +1,5 @@
 import numpy as np
-import ttenv.infoplanner_python as infoplanner_python
+import maTTenv.infoplanner_python as infoplanner_python
 
 class InfoPlanner():
     def __init__(self, n_controls=5, T=12, delta=3, eps=np.infty, arvi_time=1,

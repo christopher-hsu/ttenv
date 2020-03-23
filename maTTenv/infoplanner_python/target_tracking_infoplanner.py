@@ -11,8 +11,8 @@ from ttenv.target_tracking import TargetTrackingEnv1
 from ttenv.target_tracking import TargetTrackingBase
 from ttenv.belief_tracker import KFbelief
 
-import ttenv.infoplanner_python as infoplanner
-from ttenv.infoplanner_python.infoplanner_binding import Configure, Policy
+import maTTenv.infoplanner_python as infoplanner
+from maTTenv.infoplanner_python.infoplanner_binding import Configure, Policy
 
 
 class BeliefWrapper(object):

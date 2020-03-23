@@ -2,8 +2,8 @@ import numpy as np
 import pickle
 import datetime, json, os, argparse, time
 
-import ttenv
-from ttenv.infoplanner_python.infoplanner import InfoPlanner
+import maTTenv
+from maTTenv.infoplanner_python.infoplanner import InfoPlanner
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--seed', help='RNG seed', type=int, default=0)
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     planner = InfoPlanner(n_controls=args.n_controls)
 
-    env = ttenv.make(args.env,
+    env = maTTenv.make(args.env,
                     render = bool(args.render),
                     record = bool(args.record),
                     ros = bool(args.ros),
