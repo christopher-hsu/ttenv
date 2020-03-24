@@ -167,7 +167,14 @@ class setTrackingEnv7(maTrackingBase):
             done_dict[self.agents[ii].agent_id] = []
 
             action_vw = self.action_map[action_dict[agent_id]]
-            _ = self.agents[ii].update(action_vw, [t.state[:2] for t in self.targets[:self.nb_targets]])
+
+            # Locations of all targets and agents in order to maintain a margin between them
+            margin_pos = [t.state[:2] for t in self.targets[:self.nb_targets]]
+            for p, ids in enumerate(action_dict):
+                if agent_id != ids:
+                    margin_pos.append(np.array(self.agents[p].state[:2]))
+            _ = self.agents[ii].update(action_vw, margin_pos)
+            # _ = self.agents[ii].update(action_vw, [t.state[:2] for t in self.targets[:self.nb_targets]])
             
             observed = []
             # Update beliefs of all targets
