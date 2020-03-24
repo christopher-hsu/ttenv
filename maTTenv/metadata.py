@@ -60,7 +60,7 @@ METADATA_v2={   #Beliefs are initialized near target, easier init than v1
         'margin2wall': 0.5, # a marginal distance from a wall.
         'action_v': [2, 1.33, 0.67, 0], # action primitives - linear velocities.
         'action_w': [np.pi/2, 0, -np.pi/2], # action primitives - angular velocities.
-        'const_q': 0.01, # target noise constant in beliefs.
+        'const_q': 0.005, # target noise constant in beliefs.
         'const_q_true': 0.01, # target noise constant of actual targets.
     }
 

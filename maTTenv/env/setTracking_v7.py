@@ -167,7 +167,7 @@ class setTrackingEnv7(maTrackingBase):
             done_dict[self.agents[ii].agent_id] = []
 
             action_vw = self.action_map[action_dict[agent_id]]
-            _ = self.agents[ii].update(action_vw, [t.state[:2] for t in self.targets[:self.nb_targets-1]])
+            _ = self.agents[ii].update(action_vw, [t.state[:2] for t in self.targets[:self.nb_targets]])
             
             observed = []
             # Update beliefs of all targets
