@@ -34,7 +34,7 @@ class Agent(object):
         return self.collision_func(pos[:2])
 
     def margin_check(self, pos, target_pos):
-        return np.sqrt(np.sum((pos - target_pos)**2)) < self.margin # no update 
+        return any(np.sqrt(np.sum((pos - target_pos)**2, axis=1)) < self.margin) # no update 
 
     def reset(self, init_state):
         self.state = init_state
@@ -98,12 +98,9 @@ class AgentSE2(Agent):
                                         self.sampling_period, corrected_policy)
 
         elif margin_pos is not None:
-            if type(margin_pos) != list:
-                margin_pos = [margin_pos]
-            for mp in margin_pos:
-                if self.margin_check(new_state[:2], margin_pos):
-                    new_state[:2] = self.state[:2]
-                    break        
+            if self.margin_check(new_state[:2], margin_pos):
+                new_state[:2] = self.state[:2]
+       
         self.state = new_state
         self.range_check()        
 
