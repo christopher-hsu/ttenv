@@ -52,12 +52,6 @@ def make(env_name, render=False, figID=0, record=False, ros=False, directory='',
         from maTTenv.env.setTracking_v7 import setTrackingEnv7
         env0 = setTrackingEnv7(num_agents=num_agents, num_targets=num_targets, **kwargs)
 
-    elif env_name == 'TargetTracking-info1':
-        from maTTenv.infoplanner_python.target_tracking_infoplanner import TargetTrackingInfoPlanner1
-        env0 = TargetTrackingInfoPlanner1(num_targets=num_targets, **kwargs)
-    elif env_name == 'TargetTracking-info2':
-        from maTTenv.infoplanner_python.target_tracking_infoplanner import TargetTrackingInfoPlanner2
-        env0 = TargetTrackingInfoPlanner2(num_targets=num_targets, **kwargs)
     else:
         raise ValueError('No such environment exists.')
 
