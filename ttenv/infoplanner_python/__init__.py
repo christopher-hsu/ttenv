@@ -1,1 +1,1 @@
-# import pyInfoGathering as IGL
+# import erl_infoplanner.pyInfoPlanner as IGL
