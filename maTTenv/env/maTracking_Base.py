@@ -157,8 +157,9 @@ class maTrackingBase(gym.Env):    #MultiAgentEnv for rllib style env, seeds are 
         blocked : True if there is an obstacle between a target and the agent.
         """
         if init_pose_list:
-            self.reset_num += 1
-            return init_pose_list[self.reset_num-1]
+            # self.reset_num += 1
+            # return init_pose_list[self.reset_num-1]
+            return init_pose_list[0]
         else:
             return self.get_init_pose_random(**kwargs)
 
